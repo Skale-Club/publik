@@ -34,15 +34,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. User can see a dashboard listing all their book projects
   5. All UI text is displayed in English
   6. KDP specification registry provides centralized, queryable specifications for trim sizes, margin tables, and spine width calculations to all downstream components
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
 **UI hint**: yes
 
 Plans:
-- [ ] 01-01: Project scaffolding and database schema setup
-- [ ] 01-02: KDP specification registry (trim sizes, margins, spine width formulas, bleed rules)
-- [ ] 01-03: Book CRUD API and data layer
-- [ ] 01-04: Dashboard page with book listing, create, edit, delete
-- [ ] 01-05: Book settings form (trim size, paper type, ink type, cover finish)
+- [ ] 01-01-PLAN.md — Project scaffolding, database schema, and test infrastructure (Wave 1)
+- [ ] 01-02-PLAN.md — KDP specification registry with all 17 trim sizes, margins, spine formulas (Wave 1)
+- [ ] 01-03-PLAN.md — Book type definitions, Zod validators, and Server Actions for CRUD (Wave 2)
+- [ ] 01-04-PLAN.md — Dashboard page with book listing, create form, and delete dialog (Wave 3)
+- [ ] 01-05-PLAN.md — Book settings page with KDP printing options selectors (Wave 3)
 
 ### Phase 2: Content Editor
 **Goal**: Users can write and edit book content with chapter management in a rich text editor that auto-saves
