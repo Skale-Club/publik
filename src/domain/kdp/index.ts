@@ -1,0 +1,6 @@
+export { KDP_TRIM_SIZES, type TrimSize, type PaperInkCombo } from "./trim-sizes"
+export { PAPER_INK_COMBOS, type PaperInkComboSpec } from "./paper-types"
+export { COVER_FINISHES, type CoverFinish } from "./cover-finishes"
+export { getMargins, type MarginSet, type BleedSetting } from "./margins"
+export { getInteriorPageDimensions, BLEED_AMOUNT_IN, BLEED_AMOUNT_MM } from "./bleed"
+export { calculateSpineWidth, MIN_PAGES_FOR_SPINE_TEXT } from "./spine-width"
