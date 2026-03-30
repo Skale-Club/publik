@@ -105,44 +105,44 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BOOK-01 | — | Pending |
-| BOOK-02 | — | Pending |
-| BOOK-03 | — | Pending |
-| BOOK-04 | — | Pending |
-| BOOK-05 | — | Pending |
-| BOOK-06 | — | Pending |
-| EDIT-01 | — | Pending |
-| EDIT-02 | — | Pending |
-| EDIT-03 | — | Pending |
-| EDIT-04 | — | Pending |
-| EDIT-05 | — | Pending |
-| EDIT-06 | — | Pending |
-| EDIT-07 | — | Pending |
-| TOC-01 | — | Pending |
-| TOC-02 | — | Pending |
-| TOC-03 | — | Pending |
-| PDF-01 | — | Pending |
-| PDF-02 | — | Pending |
-| PDF-03 | — | Pending |
-| PDF-04 | — | Pending |
-| PDF-05 | — | Pending |
-| COV-01 | — | Pending |
-| COV-02 | — | Pending |
-| COV-03 | — | Pending |
-| COV-04 | — | Pending |
-| EXP-01 | — | Pending |
-| EXP-02 | — | Pending |
-| EXP-03 | — | Pending |
-| EXP-04 | — | Pending |
-| UX-01 | — | Pending |
-| UX-02 | — | Pending |
-| UX-03 | — | Pending |
+| BOOK-01 | Phase 1 | Pending |
+| BOOK-02 | Phase 1 | Pending |
+| BOOK-03 | Phase 1 | Pending |
+| BOOK-04 | Phase 1 | Pending |
+| BOOK-05 | Phase 1 | Pending |
+| BOOK-06 | Phase 1 | Pending |
+| EDIT-01 | Phase 2 | Pending |
+| EDIT-02 | Phase 2 | Pending |
+| EDIT-03 | Phase 2 | Pending |
+| EDIT-04 | Phase 2 | Pending |
+| EDIT-05 | Phase 3 | Pending |
+| EDIT-06 | Phase 3 | Pending |
+| EDIT-07 | Phase 3 | Pending |
+| TOC-01 | Phase 4 | Pending |
+| TOC-02 | Phase 4 | Pending |
+| TOC-03 | Phase 4 | Pending |
+| PDF-01 | Phase 6 | Pending |
+| PDF-02 | Phase 6 | Pending |
+| PDF-03 | Phase 6 | Pending |
+| PDF-04 | Phase 6 | Pending |
+| PDF-05 | Phase 6 | Pending |
+| COV-01 | Phase 5 | Pending |
+| COV-02 | Phase 5 | Pending |
+| COV-03 | Phase 7 | Pending |
+| COV-04 | Phase 7 | Pending |
+| EXP-01 | Phase 8 | Pending |
+| EXP-02 | Phase 8 | Pending |
+| EXP-03 | Phase 8 | Pending |
+| EXP-04 | Phase 8 | Pending |
+| UX-01 | Phase 1 | Pending |
+| UX-02 | Phase 8 | Pending |
+| UX-03 | Phase 1 | Pending |
 
 **Coverage:**
-- v1 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27
+- v1 requirements: 32 total
+- Mapped to phases: 32
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after initial definition*
+*Last updated: 2026-03-30 after roadmap creation*
