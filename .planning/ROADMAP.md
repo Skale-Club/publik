@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [ ] 01-01-PLAN.md — Project scaffolding, database schema, and test infrastructure (Wave 1)
-- [ ] 01-02-PLAN.md — KDP specification registry with all 17 trim sizes, margins, spine formulas (Wave 1)
+- [ ] 01-02-PLAN.md — KDP specification registry with all 16 trim sizes, margins, spine formulas (Wave 1)
 - [ ] 01-03-PLAN.md — Book type definitions, Zod validators, and Server Actions for CRUD (Wave 2)
 - [ ] 01-04-PLAN.md — Dashboard page with book listing, create form, and delete dialog (Wave 3)
 - [ ] 01-05-PLAN.md — Book settings page with KDP printing options selectors (Wave 3)
