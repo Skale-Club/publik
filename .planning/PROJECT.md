@@ -25,7 +25,8 @@ Gerar arquivos prontos para publicacao na Amazon KDP a partir do conteudo do liv
 - [ ] Ferramenta gera arquivos nos formatos exigidos pela Amazon KDP (interior PDF + capa)
 - [ ] Suporte a qualquer tipo de livro (texto corrido, imagens + texto, livros ilustrados)
 - [ ] Painel admin intuitivo para gerenciar livros
-- [ ] Instrucoes/guia para publicar na Amazon KDP (usuario nunca publicou antes)
+- [ ] Guia passo-a-passo para publicar na Amazon KDP (usuario nunca publicou antes)
+- [ ] Interface em ingles (english-first)
 
 ### Out of Scope
 
@@ -45,6 +46,7 @@ Gerar arquivos prontos para publicacao na Amazon KDP a partir do conteudo do liv
 ## Constraints
 
 - **Plataforma**: Web app — acessivel pelo navegador
+- **Idioma**: Interface em ingles (english-first)
 - **Output**: PDF + arquivos formato KDP
 - **Capa**: Upload de imagem pronta (nao editor visual)
 - **Indice**: Gerado automaticamente mas editavel
