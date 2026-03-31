@@ -102,13 +102,13 @@ Plans:
   1. User can upload a front cover image for their book
   2. User can upload a back cover image or enter back cover text
   3. System validates uploaded cover images against minimum dimension requirements
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 **UI hint**: yes
 
 Plans:
-- [ ] 05-01: Front cover image upload with storage
-- [ ] 05-02: Back cover image upload or text entry
-- [ ] 05-03: Cover image dimension validation
+- [ ] 05-01-PLAN.md — Front cover image upload with dimension validation (Wave 1)
+- [ ] 05-02-PLAN.md — Back cover (image OR text) input (Wave 1)
+- [ ] 05-03-PLAN.md — KDP validation integration (Wave 2)
 
 ### Phase 6: Interior PDF Generation
 **Goal**: Users can generate a KDP-compliant interior PDF with correct margins, page numbers, headers/footers, font embedding, and exact trim dimensions
@@ -186,3 +186,12 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1 | 04-01 | None | 4 files |
 | 2 | 04-02 | 04-01 | 6 files |
 | 3 | 04-03 | 04-02 | 4 files |
+
+## Phase 05: Cover Management
+
+### Wave Structure
+
+| Wave | Plans | Dependencies | Files Modified |
+|------|-------|--------------|----------------|
+| 1 | 05-01, 05-02 | None | 11 files |
+| 2 | 05-03 | 05-01, 05-02 | 3 files |
