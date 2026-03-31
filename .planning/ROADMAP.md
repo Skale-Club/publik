@@ -136,11 +136,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. System generates a single continuous cover PDF (front + spine + back + bleed) with correct KDP dimensions
   2. Spine width is accurately calculated from the final interior page count and selected paper type
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 07-01: Spine width calculation from page count and paper type
-- [ ] 07-02: Full cover PDF composition (bleed + back + spine + front + bleed)
+- [x] 07-01-PLAN.md — Spine width calculation from page count and paper type (Wave 1, TDD)
+- [x] 07-02-PLAN.md — Full cover PDF composition (bleed + back + spine + front + bleed) (Wave 2)
 
 ### Phase 8: Export, Validation & Publishing Guide
 **Goal**: Users can download validated, KDP-ready files and access step-by-step guidance for publishing on Amazon KDP
@@ -156,10 +156,10 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 08-01: Individual file downloads (interior PDF, cover PDF)
-- [ ] 08-02: KDP compliance validation engine
-- [ ] 08-03: ZIP package export (interior + cover + checklist)
-- [ ] 08-04: Step-by-step KDP publishing guide page
+- [ ] 08-01-PLAN.md — Individual file downloads (interior PDF, cover PDF)
+- [ ] 08-02-PLAN.md — KDP compliance validation engine
+- [ ] 08-03-PLAN.md — ZIP package export (interior + cover + checklist)
+- [ ] 08-04-PLAN.md — Step-by-step KDP publishing guide page
 
 ## Progress
 
