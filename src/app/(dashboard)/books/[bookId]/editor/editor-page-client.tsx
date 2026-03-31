@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from "react"
 import Link from "next/link"
 import { Book } from "@/domain/book/book"
 import { Chapter } from "@/domain/book/chapter"
-import { createChapter, updateChapter } from "../actions"
+import { createChapter, updateChapterContent } from "../actions"
 import { TipTapEditor } from "@/components/editor/tiptap-editor"
 import { EditorToolbar } from "@/components/editor/editor-toolbar"
 import { useAutoSave } from "@/components/editor/use-auto-save"
@@ -54,8 +54,8 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
 
   const handleSave = useCallback(async (contentToSave: string) => {
     if (!selectedChapterId) return
-    await updateChapter(selectedChapterId, book.id, { content: contentToSave })
-  }, [book.id, selectedChapterId])
+    await updateChapterContent(selectedChapterId, contentToSave)
+  }, [selectedChapterId])
 
   const { status, retry } = useAutoSave({
     content: currentContent,

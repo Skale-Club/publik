@@ -134,6 +134,21 @@ export async function deleteChapter(chapterId: string, bookId: string) {
   revalidatePath(`/dashboard/books/${bookId}`)
 }
 
+export async function updateChapterContent(chapterId: string, content: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDb()
+    const now = new Date().toISOString()
+    
+    db.run(`UPDATE chapters SET content = ?, updated_at = ? WHERE id = ?`, [content, now, chapterId])
+    saveDb()
+
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to update chapter content:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}
+
 export async function getChapters(bookId: string): Promise<Chapter[]> {
   const { getDb } = await import("@/infrastructure/db/client")
   await import("@/infrastructure/db/client").then(m => m.initDb?.())
