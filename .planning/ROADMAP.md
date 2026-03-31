@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation & Book Management** - Project scaffolding, KDP spec registry, book CRUD, and dashboard
 - [ ] **Phase 2: Content Editor** - Rich text editor with chapters, images, and auto-save
 - [x] **Phase 3: File Import** - Import manuscripts from DOCX, PDF, and image files (completed 2026-03-31)
-- [ ] **Phase 4: Table of Contents** - Auto-generated and editable TOC from chapter headings
+- [x] **Phase 4: Table of Contents** - Auto-generated and editable TOC from chapter headings (completed 2026-03-30)
 - [ ] **Phase 5: Cover Management** - Cover image upload and back cover content
 - [ ] **Phase 6: Interior PDF Generation** - KDP-compliant interior PDF with correct formatting
 - [ ] **Phase 7: Cover PDF Generation** - Full cover PDF with calculated spine width
@@ -92,7 +92,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Auto-generated TOC from chapter headings (Wave 1)
 - [x] 04-02-PLAN.md — Editable TOC UI (rename, reorder, add, remove) (Wave 2)
-- [ ] 04-03-PLAN.md — TOC integration with PDF output pipeline (Wave 3)
+- [x] 04-03-PLAN.md — TOC integration with PDF output pipeline (Wave 3)
 
 ### Phase 5: Cover Management
 **Goal**: Users can upload cover images and provide back cover content for their books
