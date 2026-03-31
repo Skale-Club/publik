@@ -13,6 +13,21 @@ import type { TOCEntry } from "@/types/toc"
 export const maxDuration = 300 // 5 minutes for large documents
 
 /**
+ * Estimate page count from chapter content
+ * Rough estimate: ~500 words per page for standard 6x9 book
+ */
+function estimatePageCount(chapters: ChapterContent[]): number {
+  let totalWords = 0
+  for (const chapter of chapters) {
+    // Count words in content (rough estimate)
+    const words = chapter.content.split(/\s+/).filter(Boolean).length
+    totalWords += words
+  }
+  // 500 words per page, minimum 1 page
+  return Math.max(1, Math.ceil(totalWords / 500))
+}
+
+/**
  * GET handler for PDF generation
  * Expects bookId as query parameter
  */
@@ -100,10 +115,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Map book settings
+    const pageCount = estimatePageCount(chapterContents)
     const bookSettings: BookSettings = {
       title: bookTitle,
       author: "Author", // TODO: Get from book or user
       trimSizeId: isValidTrimSize(bookTrimSize) ? bookTrimSize : undefined,
+      pageCount,
+      bleedSetting: "no-bleed", // TODO: Get from book settings
     }
 
     // Generate PDF

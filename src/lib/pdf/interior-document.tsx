@@ -5,34 +5,35 @@
 
 import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer"
 import { getPageDimensions, getTrimSizeLabel, isValidTrimSize } from "./page-layout"
+import { getPDFMargins } from "./page-margins"
 import { transformTOCForPDF } from "@/lib/toc/transform"
 import type { TOCEntry } from "@/types/toc"
+import { defaultLayoutOptions, type LayoutOptions } from "./layout-options"
+import { PDFHeader } from "./components/page-header"
+import { PDFFooter } from "./components/page-footer"
+import { registerKDPFonts, getBodyFontFamily, getHeadingFontFamily, getCodeFontFamily } from "./font-registration"
 
-// Register fonts for PDF generation
-// Using built-in Helvetica for now - can be extended with custom fonts
-Font.register({
-  family: "Helvetica",
-  fonts: [
-    { src: "Helvetica" },
-    { src: "Helvetica-Bold", fontWeight: "bold" },
-  ],
-})
+// Register KDP fonts for PDF generation
+// Using registered fonts instead of system fonts for KDP compliance
+registerKDPFonts()
 
 // Document styles
 const documentStyles = StyleSheet.create({
   page: {
     padding: 72, // 1 inch margins
-    fontFamily: "Helvetica",
+    fontFamily: getBodyFontFamily(),
   },
   chapterTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    fontFamily: getHeadingFontFamily(),
     marginTop: 20,
     marginBottom: 10,
   },
   content: {
     fontSize: 12,
     lineHeight: 1.5,
+    fontFamily: getBodyFontFamily(),
   },
   footer: {
     position: "absolute",
@@ -76,6 +77,12 @@ export interface BookSettings {
     left: number
     right: number
   }
+  /** Layout options for headers and footers */
+  layoutOptions?: LayoutOptions
+  /** Page count for calculating margins */
+  pageCount?: number
+  /** Bleed setting for margin calculation */
+  bleedSetting?: "bleed" | "no-bleed"
 }
 
 /**
@@ -135,6 +142,25 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
     console.warn(`Invalid trim size: ${book.trimSizeId}. Using default.`)
   }
 
+  // Get layout options (use defaults if not provided)
+  const layout = book.layoutOptions ?? defaultLayoutOptions
+
+  // Calculate KDP margins if page count and bleed setting are provided
+  const pageMarginStyle = book.pageCount && book.bleedSetting
+    ? getPDFMargins(book.pageCount, book.bleedSetting)
+    : null
+
+  // Apply margin styles to page style
+  const pageStyle = pageMarginStyle
+    ? {
+        ...documentStyles.page,
+        paddingTop: pageMarginStyle.top,
+        paddingBottom: pageMarginStyle.bottom,
+        paddingLeft: pageMarginStyle.left,
+        paddingRight: pageMarginStyle.right,
+      }
+    : documentStyles.page
+
   // Transform TOC entries for PDF
   const pdfTocEntries = transformTOCForPDF(tocEntries)
 
@@ -143,19 +169,16 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
       {/* Page 1: Table of Contents */}
       <Page
         size={[pageDimensions.width, pageDimensions.height]}
-        style={documentStyles.page}
+        style={pageStyle}
         bookmark="Table of Contents"
       >
         <TOCPageContent entries={pdfTocEntries} />
 
+        {/* Header */}
+        <PDFHeader bookTitle={book.title} layout={layout} />
+
         {/* Footer with page number - TOC page */}
-        <Text
-          style={documentStyles.footer}
-          render={({ pageNumber, totalPages }) =>
-            `Page ${pageNumber} of ${totalPages}`
-          }
-          fixed
-        />
+        <PDFFooter layout={layout} />
       </Page>
 
       {/* Content Pages */}
@@ -167,8 +190,11 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
           <Page
             key={chapter.id}
             size={[pageDimensions.width, pageDimensions.height]}
-            style={documentStyles.page}
+            style={pageStyle}
           >
+            {/* Header with chapter info */}
+            <PDFHeader bookTitle={book.title} chapterTitle={chapter.title} layout={layout} />
+
             {/* Chapter heading with bookmark */}
             <Text
               id={chapter.anchorId}
@@ -190,13 +216,7 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
             <Text style={documentStyles.content}>{chapter.content}</Text>
 
             {/* Footer with page number */}
-            <Text
-              style={documentStyles.footer}
-              render={({ pageNumber, totalPages }) =>
-                `Page ${pageNumber} of ${totalPages}`
-              }
-              fixed
-            />
+            <PDFFooter layout={layout} />
           </Page>
         )
       })}
@@ -216,6 +236,25 @@ export function InteriorDocumentWithPageNumbers(props: InteriorDocumentProps) {
     ? getPageDimensions(book.trimSizeId)
     : { width: 612, height: 792 }
 
+  // Get layout options (use defaults if not provided)
+  const layout = book.layoutOptions ?? defaultLayoutOptions
+
+  // Calculate KDP margins if page count and bleed setting are provided
+  const pageMarginStyle = book.pageCount && book.bleedSetting
+    ? getPDFMargins(book.pageCount, book.bleedSetting)
+    : null
+
+  // Apply margin styles to page style
+  const pageStyle = pageMarginStyle
+    ? {
+        ...documentStyles.page,
+        paddingTop: pageMarginStyle.top,
+        paddingBottom: pageMarginStyle.bottom,
+        paddingLeft: pageMarginStyle.left,
+        paddingRight: pageMarginStyle.right,
+      }
+    : documentStyles.page
+
   // Transform TOC entries for PDF
   const pdfTocEntries = transformTOCForPDF(tocEntries)
 
@@ -224,7 +263,7 @@ export function InteriorDocumentWithPageNumbers(props: InteriorDocumentProps) {
       {/* Page 1: TOC with "..." on first pass */}
       <Page
         size={[pageDimensions.width, pageDimensions.height]}
-        style={documentStyles.page}
+        style={pageStyle}
       >
         <TOCPageContent
           entries={pdfTocEntries.map((entry) => ({
@@ -240,7 +279,7 @@ export function InteriorDocumentWithPageNumbers(props: InteriorDocumentProps) {
         <Page
           key={chapter.id}
           size={[pageDimensions.width, pageDimensions.height]}
-          style={documentStyles.page}
+          style={pageStyle}
         >
           <Text
             id={chapter.anchorId}

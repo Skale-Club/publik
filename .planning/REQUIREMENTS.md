@@ -34,11 +34,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### PDF Generation
 
-- [ ] **PDF-01**: User can generate a KDP-compliant interior PDF with correct margins, bleed, and trim dimensions
+- [x] **PDF-01**: User can generate a KDP-compliant interior PDF with correct margins, bleed, and trim dimensions
 - [ ] **PDF-02**: Generated PDF includes page numbers
 - [ ] **PDF-03**: Generated PDF includes headers and footers
 - [ ] **PDF-04**: Generated PDF embeds all fonts correctly (KDP requirement)
-- [ ] **PDF-05**: PDF dimensions match selected trim size exactly
+- [x] **PDF-05**: PDF dimensions match selected trim size exactly
 
 ### Cover
 
@@ -121,11 +121,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOC-01 | Phase 4 | Pending |
 | TOC-02 | Phase 4 | Complete |
 | TOC-03 | Phase 4 | Pending |
-| PDF-01 | Phase 6 | Pending |
+| PDF-01 | Phase 6 | Complete |
 | PDF-02 | Phase 6 | Pending |
 | PDF-03 | Phase 6 | Pending |
 | PDF-04 | Phase 6 | Pending |
-| PDF-05 | Phase 6 | Pending |
+| PDF-05 | Phase 6 | Complete |
 | COV-01 | Phase 5 | Pending |
 | COV-02 | Phase 5 | Pending |
 | COV-03 | Phase 7 | Pending |
