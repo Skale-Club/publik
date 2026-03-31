@@ -2,6 +2,7 @@ import Link from "next/link"
 import { initDb } from "@/infrastructure/db/client"
 import { Book } from "@/domain/book/book"
 import { FileDownloads } from "@/components/export/FileDownloads"
+import { ZipDownloadButton } from "@/components/export/ZipDownloadButton"
 
 interface PageProps {
   params: Promise<{ bookId: string }>
@@ -62,6 +63,11 @@ export default async function ExportPage({ params }: PageProps) {
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Your KDP-Ready Files</h2>
         <FileDownloads bookId={bookId} bookTitle={book.title} />
+      </section>
+      
+      <section className="mb-8 border-t pt-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Complete Package</h2>
+        <ZipDownloadButton bookId={bookId} bookTitle={book.title} />
       </section>
       
       <section className="border-t pt-8">
