@@ -1,9 +1,13 @@
 "use server"
 
-import * as pdfjs from "pdfjs-dist"
+type PdfJsModule = typeof import("pdfjs-dist/legacy/build/pdf.mjs")
 
-// Configure worker - use CDN for server-side processing
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`
+let pdfjsPromise: Promise<PdfJsModule> | undefined
+
+function getPdfJs() {
+  pdfjsPromise ??= import("pdfjs-dist/legacy/build/pdf.mjs")
+  return pdfjsPromise
+}
 
 /**
  * Extracts text content from a PDF file and returns HTML.
@@ -13,6 +17,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pd
 export async function extractTextFromPdf(
   input: File | ArrayBuffer
 ): Promise<string> {
+  const pdfjs = await getPdfJs()
   let arrayBuffer: ArrayBuffer
 
   if (input instanceof File) {
@@ -60,6 +65,7 @@ export async function extractTextFromPdf(
 export async function getPdfMetadata(
   input: File | ArrayBuffer
 ): Promise<{ title?: string; author?: string; pageCount: number }> {
+  const pdfjs = await getPdfJs()
   let arrayBuffer: ArrayBuffer
 
   if (input instanceof File) {
