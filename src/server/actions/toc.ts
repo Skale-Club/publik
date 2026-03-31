@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import type { Anchor } from "@/types/toc"
+import { initDb } from "@/infrastructure/db/client"
 import {
   getTOCEntriesForBook,
   getTOCEntryById,
@@ -85,6 +86,7 @@ function rowToResponse(row: TOCEntryRow): TOCEntryResponse {
  * Get all TOC entries for a book
  */
 export async function getTOCEntries(bookId: string): Promise<TOCEntryResponse[]> {
+  await initDb()
   const entries = getTOCEntriesForBook(bookId)
   return entries.map(rowToResponse)
 }
@@ -97,6 +99,7 @@ export async function updateTOCEntry(
   title: string
 ): Promise<{ success: boolean; entry?: TOCEntryResponse; error?: string }> {
   try {
+    await initDb()
     const validated = updateTOCEntrySchema.parse({ id, title })
     
     const updated = updateTOCEntryTitle(validated.id, validated.title)
@@ -123,6 +126,7 @@ export async function reorderTOCEntriesAction(
   entryIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    await initDb()
     const validated = reorderTOCEntriesSchema.parse({ bookId, entryIds })
     
     reorderTOCEntries(validated.bookId, validated.entryIds)
@@ -147,6 +151,7 @@ export async function addTOCEntry(
   position?: number
 ): Promise<{ success: boolean; entry?: TOCEntryResponse; error?: string }> {
   try {
+    await initDb()
     const validated = addTOCEntrySchema.parse({ bookId, title, level, position })
     
     const entry = addCustomTOCEntry(validated.bookId, {
@@ -172,6 +177,7 @@ export async function removeTOCEntryAction(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    await initDb()
     const validated = removeTOCEntrySchema.parse({ id })
     
     removeTOCEntry(validated.id)
@@ -194,6 +200,7 @@ export async function syncTOC(
   anchors: Anchor[]
 ): Promise<{ success: boolean; result?: { added: number; updated: number; preserved: number }; error?: string }> {
   try {
+    await initDb()
     const validated = syncTOCSchema.parse({ bookId, anchors })
     
     const result = syncTOCWithHeadings(validated.bookId, validated.anchors)

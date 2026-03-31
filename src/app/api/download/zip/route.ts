@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import archiver from 'archiver'
-import { getDb } from '@/infrastructure/db/client'
+import { getDb, initDb } from '@/infrastructure/db/client'
 import { generateChecklist, type BookData } from '@/lib/export/checklist'
 
 export const maxDuration = 300 // 5 minutes for large packages
@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    await initDb()
     const db = getDb()
     
     // Fetch book data

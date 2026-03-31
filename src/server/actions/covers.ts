@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { nanoid } from "nanoid"
-import { getDb, saveDb } from "@/infrastructure/db/client"
+import { getDb, initDb, saveDb } from "@/infrastructure/db/client"
 import { covers } from "@/infrastructure/db/schema/covers"
 
 export interface CoverData {
@@ -32,11 +32,16 @@ export interface BookData {
   updatedAt: string
 }
 
+async function getReadyDb() {
+  await initDb()
+  return getDb()
+}
+
 /**
  * Get book data by ID (for cover editor)
  */
 export async function getBook(bookId: string): Promise<BookData | null> {
-  const db = getDb()
+  const db = await getReadyDb()
   
   const result = db.exec(`SELECT * FROM books WHERE id = '${bookId}'`)
   
@@ -103,7 +108,7 @@ const backCoverTextSchema = z.object({
  * Get cover data for a book
  */
 export async function getCover(bookId: string): Promise<CoverData | null> {
-  const db = getDb()
+  const db = await getReadyDb()
   
   const result = db.exec(`SELECT * FROM covers WHERE book_id = '${bookId}'`)
   
@@ -169,7 +174,7 @@ export async function saveFrontCover(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const validated = frontCoverSchema.parse({ bookId, url, width, height })
-    const db = getDb()
+    const db = await getReadyDb()
     const now = new Date().toISOString()
     
     // Check if cover exists
@@ -213,7 +218,7 @@ export async function saveBackCoverImage(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const validated = backCoverImageSchema.parse({ bookId, imageUrl, imageWidth, imageHeight })
-    const db = getDb()
+    const db = await getReadyDb()
     const now = new Date().toISOString()
     
     // Check if cover exists
@@ -255,7 +260,7 @@ export async function saveBackCoverText(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const validated = backCoverTextSchema.parse({ bookId, text })
-    const db = getDb()
+    const db = await getReadyDb()
     const now = new Date().toISOString()
     
     // Check if cover exists
@@ -295,7 +300,7 @@ export async function deleteCover(
   bookId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDb()
+    const db = await getReadyDb()
     
     db.run(`DELETE FROM covers WHERE book_id = ?`, [bookId])
     saveDb()

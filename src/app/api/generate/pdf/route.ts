@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { renderToStream } from "@react-pdf/renderer"
-import { getDb } from "@/infrastructure/db/client"
+import { getDb, initDb } from "@/infrastructure/db/client"
 import { InteriorDocument, type BookSettings, type ChapterContent } from "@/lib/pdf/interior-document"
 import { isValidTrimSize } from "@/lib/pdf/page-layout"
 import type { TOCEntry } from "@/types/toc"
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "bookId is required" }, { status: 400 })
     }
 
+    await initDb()
     const db = getDb()
 
     // Fetch book

@@ -1,11 +1,12 @@
 import Link from "next/link"
 import { BookCard } from "@/components/books/book-card"
-import { initDb } from "@/infrastructure/db/client"
+import { getDb, initDb } from "@/infrastructure/db/client"
 import { Book } from "@/domain/book/book"
+
+export const dynamic = "force-dynamic"
 
 async function getBooks(): Promise<Book[]> {
   await initDb()
-  const { getDb } = await import("@/infrastructure/db/client")
   const db = getDb()
 
   const result = db.exec("SELECT * FROM books WHERE deleted_at IS NULL ORDER BY created_at DESC")

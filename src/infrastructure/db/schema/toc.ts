@@ -11,6 +11,7 @@ export const tocEntries = sqliteTable("toc_entries", {
   isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
   updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
+  deletedAt: text("deleted_at"),
 }, (table) => ({
   bookIdIdx: index("toc_entries_book_id_idx").on(table.bookId),
 }))

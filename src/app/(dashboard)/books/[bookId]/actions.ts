@@ -4,8 +4,13 @@ import { revalidatePath } from "next/cache"
 import { nanoid } from "nanoid"
 import { bookCreateSchema, bookUpdateSchema } from "@/domain/book/book-validator"
 import { chapterCreateSchema, chapterUpdateSchema } from "@/domain/book/chapter-validator"
-import { getDb, saveDb } from "@/infrastructure/db/client"
+import { getDb, initDb, saveDb } from "@/infrastructure/db/client"
 import { Chapter } from "@/domain/book/chapter"
+
+async function getReadyDb() {
+  await initDb()
+  return getDb()
+}
 
 export async function createBook(formData: FormData) {
   const raw = {
@@ -19,7 +24,7 @@ export async function createBook(formData: FormData) {
 
   const validated = bookCreateSchema.parse(raw)
 
-  const db = getDb()
+  const db = await getReadyDb()
   const id = nanoid()
   const now = new Date().toISOString()
   
@@ -46,7 +51,7 @@ export async function updateBook(bookId: string, formData: FormData) {
 
   const validated = bookUpdateSchema.parse(raw)
   
-  const db = getDb()
+  const db = await getReadyDb()
   const now = new Date().toISOString()
   
   const updates: string[] = []
@@ -70,7 +75,7 @@ export async function updateBook(bookId: string, formData: FormData) {
 }
 
 export async function deleteBook(bookId: string) {
-  const db = getDb()
+  const db = await getReadyDb()
   const now = new Date().toISOString()
   
   db.run(`UPDATE books SET deleted_at = ? WHERE id = ?`, [now, bookId])
@@ -82,7 +87,7 @@ export async function deleteBook(bookId: string) {
 export async function createChapter(bookId: string, title: string): Promise<{ id: string }> {
   const validated = chapterCreateSchema.parse({ title })
   
-  const db = getDb()
+  const db = await getReadyDb()
   const id = nanoid()
   const now = new Date().toISOString()
   
@@ -104,7 +109,7 @@ export async function createChapter(bookId: string, title: string): Promise<{ id
 export async function updateChapter(chapterId: string, bookId: string, data: { title?: string; content?: string }) {
   const validated = chapterUpdateSchema.parse(data)
   
-  const db = getDb()
+  const db = await getReadyDb()
   const now = new Date().toISOString()
   
   const updates: string[] = []
@@ -125,7 +130,7 @@ export async function updateChapter(chapterId: string, bookId: string, data: { t
 }
 
 export async function deleteChapter(chapterId: string, bookId: string) {
-  const db = getDb()
+  const db = await getReadyDb()
   const now = new Date().toISOString()
   
   db.run(`UPDATE chapters SET deleted_at = ? WHERE id = ?`, [now, chapterId])
@@ -136,7 +141,7 @@ export async function deleteChapter(chapterId: string, bookId: string) {
 
 export async function updateChapterContent(chapterId: string, content: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDb()
+    const db = await getReadyDb()
     const now = new Date().toISOString()
     
     db.run(`UPDATE chapters SET content = ?, updated_at = ? WHERE id = ?`, [content, now, chapterId])
@@ -150,8 +155,7 @@ export async function updateChapterContent(chapterId: string, content: string): 
 }
 
 export async function getChapters(bookId: string): Promise<Chapter[]> {
-  const { getDb } = await import("@/infrastructure/db/client")
-  await import("@/infrastructure/db/client").then(m => m.initDb?.())
+  await initDb()
   const db = getDb()
   
   const result = db.exec(`SELECT * FROM chapters WHERE book_id = '${bookId}' AND deleted_at IS NULL ORDER BY "order" ASC`)
@@ -171,7 +175,7 @@ export async function getChapters(bookId: string): Promise<Chapter[]> {
 }
 
 export async function reorderChapters(bookId: string, chapterIds: string[]): Promise<void> {
-  const db = getDb()
+  const db = await getReadyDb()
   const now = new Date().toISOString()
   
   chapterIds.forEach((chapterId, index) => {

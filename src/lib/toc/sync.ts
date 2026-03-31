@@ -26,7 +26,7 @@ export function getTOCEntriesForBook(bookId: string): TOCEntryRow[] {
   const db = getDb()
   
   const result = db.exec(
-    `SELECT * FROM toc_entries WHERE book_id = '${bookId}' ORDER BY position ASC`
+    `SELECT * FROM toc_entries WHERE book_id = '${bookId}' AND deleted_at IS NULL ORDER BY position ASC`
   )
   
   if (result.length === 0 || result[0].values.length === 0) {
@@ -172,7 +172,7 @@ export function debounceSync<T extends (...args: any[]) => any>(
 export function getTOCEntryById(id: string): TOCEntryRow | null {
   const db = getDb()
   
-  const result = db.exec(`SELECT * FROM toc_entries WHERE id = '${id}'`)
+  const result = db.exec(`SELECT * FROM toc_entries WHERE id = '${id}' AND deleted_at IS NULL`)
   
   if (result.length === 0 || result[0].values.length === 0) {
     return null
@@ -260,7 +260,7 @@ export function addCustomTOCEntry(
   let position = data.position
   if (position === undefined) {
     const result = db.exec(
-      `SELECT MAX(position) as maxPos FROM toc_entries WHERE book_id = '${bookId}'`
+      `SELECT MAX(position) as maxPos FROM toc_entries WHERE book_id = '${bookId}' AND deleted_at IS NULL`
     )
     const maxPos = result[0]?.values[0]?.[0] as number | null
     position = (maxPos ?? -1) + 1

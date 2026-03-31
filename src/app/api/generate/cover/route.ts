@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { renderToBuffer } from "@react-pdf/renderer"
-import { getDb } from "@/infrastructure/db/client"
+import { getDb, initDb } from "@/infrastructure/db/client"
 import { CoverDocument, type CoverBookData } from "@/lib/pdf/cover-document"
 import { isValidTrimSize } from "@/lib/pdf/page-layout"
 
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "bookId is required" }, { status: 400 })
     }
 
+    await initDb()
     const db = getDb()
 
     // Fetch book with all needed fields
