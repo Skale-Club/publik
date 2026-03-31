@@ -18,7 +18,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Content Editor
 
-- [ ] **EDIT-01**: User can write and edit book content in a rich text editor
+- [x] **EDIT-01**: User can write and edit book content in a rich text editor
 - [x] **EDIT-02**: User can create and manage chapters/sections within a book
 - [ ] **EDIT-03**: User can insert images into book content
 - [ ] **EDIT-04**: Content auto-saves as user types
@@ -111,7 +111,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BOOK-04 | Phase 1 | Pending |
 | BOOK-05 | Phase 1 | Pending |
 | BOOK-06 | Phase 1 | Pending |
-| EDIT-01 | Phase 2 | Pending |
+| EDIT-01 | Phase 2 | Complete |
 | EDIT-02 | Phase 2 | Complete |
 | EDIT-03 | Phase 2 | Pending |
 | EDIT-04 | Phase 2 | Pending |
