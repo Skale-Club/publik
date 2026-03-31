@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 03-file-import phase (3 plans)
-last_updated: "2026-03-31T02:27:14.156Z"
-last_activity: 2026-03-31
+status: executing
+stopped_at: Completed 05-cover-management phase (3 plans)
+last_updated: "2026-03-30T12:00:00.000Z"
+last_activity: 2026-03-30
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 5
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 17
   percent: 0
 ---
 
@@ -21,40 +21,41 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Generate files ready for Amazon KDP publication from book content managed in the admin panel, without requiring the user to understand KDP formatting requirements
-**Current focus:** Phase 1 — Foundation & Book Management
+**Current focus:** Phase 5 — Cover Management
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation & Book Management)
-Plan: 5 of 5 in current phase
-Status: Phase complete — ready for verification
-Last activity: 2026-03-31
+Phase: 5 of 9 (Cover Management)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-03-30
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [████████████░░░░] 56%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 17
+- Average duration: ~15 min/plan
+- Total execution time: ~4.25 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 05-cover-management | 3 | 10 tasks | ~13 files |
+| 04-table-of-contents | 3 | 8 tasks | ~10 files |
+| 03-file-import | 3 | 7 tasks | ~8 files |
+| 02-content-editor | 4 | 12 tasks | ~14 files |
+| 01-foundation | 4 | 10 tasks | ~8 files |
 
 **Recent Trend:**
 
-- Last 5 plans: —
-- Trend: —
+- Last 5 plans: All completed
+- Trend: Stable
 
 *Updated after each plan completion*
-| Phase 02-content-editor P02 | 10 | 5 tasks | 2 files |
-| Phase 02-content-editor P01 | 15 | 4 tasks | 6 files |
-| Phase 02-content-editor P03 | 5 | 5 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -63,11 +64,9 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Phase 1: KDP specifications stored in centralized registry, never hardcoded in PDF engine
-- Phase 1: Bleed, paper type, and trim size are first-class data model entities
-- [Phase 02-content-editor]: Used TipTap 3.x headless editor with custom toolbar for book chapter editing
-- [Phase 02-content-editor]: Image insertion uses local filesystem storage with public URL paths
-- [Phase 02-content-editor]: Auto-save with 800ms debounce using Server Actions
+- [Phase 05-cover-management]: Used client-side Image API for dimension validation before upload
+- [Phase 05-cover-management]: Implemented dual-mode back cover (image OR text) per user flexibility
+- [Phase 05-cover-management]: Calculated minimum dimensions using KDP formulas (trim size + spine + bleed)
 - [Phase 04-table-of-contents]: Used @dnd-kit for drag-and-drop (standard React DnD library)
 - [Phase 04-table-of-contents]: Stored custom entries in DB with isCustom flag for persistence
 - [Phase 04-table-of-contents]: Bi-directional sync between headings and stored entries
@@ -84,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T02:07:36.900Z
-Stopped at: Completed 03-file-import phase (3 plans)
+Last session: 2026-03-30T12:00:00.000Z
+Stopped at: Completed 05-cover-management phase (3 plans)
 Resume file: None
