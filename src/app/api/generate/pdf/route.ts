@@ -1,12 +1,13 @@
 /**
  * PDF Generation API Endpoint
- * Generates PDF with TOC integration
+ * Generates PDF with TOC integration and KDP trim sizes
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { renderToStream } from "@react-pdf/renderer"
 import { getDb } from "@/infrastructure/db/client"
-import { TOCDocument, type BookSettings, type ChapterContent } from "@/lib/pdf/toc-document"
+import { InteriorDocument, type BookSettings, type ChapterContent } from "@/lib/pdf/interior-document"
+import { isValidTrimSize } from "@/lib/pdf/page-layout"
 import type { TOCEntry } from "@/types/toc"
 
 export const maxDuration = 300 // 5 minutes for large documents
@@ -102,11 +103,11 @@ export async function GET(request: NextRequest) {
     const bookSettings: BookSettings = {
       title: bookTitle,
       author: "Author", // TODO: Get from book or user
-      trimSize: mapTrimSize(bookTrimSize),
+      trimSizeId: isValidTrimSize(bookTrimSize) ? bookTrimSize : undefined,
     }
 
     // Generate PDF
-    const document = TOCDocument({
+    const document = InteriorDocument({
       book: bookSettings,
       chapters: chapterContents,
       tocEntries: bookTocEntries,
@@ -128,17 +129,5 @@ export async function GET(request: NextRequest) {
       { error: error instanceof Error ? error.message : "Failed to generate PDF" },
       { status: 500 }
     )
-  }
-}
-
-/**
- * Map trim size ID to PDF page size
- */
-function mapTrimSize(trimSizeId: string): "A4" | "LETTER" {
-  switch (trimSizeId) {
-    case "letter":
-      return "LETTER"
-    default:
-      return "A4"
   }
 }
