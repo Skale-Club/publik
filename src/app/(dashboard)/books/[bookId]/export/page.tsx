@@ -71,10 +71,14 @@ export default async function ExportPage({ params }: PageProps) {
       </section>
       
       <section className="border-t pt-8">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-semibold text-blue-900 mb-2">Need Help?</h3>
+          <p className="text-sm text-blue-800 mb-3">
+            New to KDP? Learn how to upload and publish your book step by step.
+          </p>
           <Link
             href="/publishing-guide"
-            className="inline-flex items-center gap-2 text-blue-600 hover:underline"
+            className="inline-flex items-center gap-2 text-blue-700 font-medium hover:text-blue-900"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +95,7 @@ export default async function ExportPage({ params }: PageProps) {
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
-            Learn how to upload to KDP
+            View Publishing Guide
           </Link>
         </div>
       </section>
