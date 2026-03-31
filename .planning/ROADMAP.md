@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & Book Management** - Project scaffolding, KDP spec registry, book CRUD, and dashboard
 - [ ] **Phase 2: Content Editor** - Rich text editor with chapters, images, and auto-save
-- [ ] **Phase 3: File Import** - Import manuscripts from DOCX, PDF, and image files
+- [x] **Phase 3: File Import** - Import manuscripts from DOCX, PDF, and image files (completed 2026-03-31)
 - [ ] **Phase 4: Table of Contents** - Auto-generated and editable TOC from chapter headings
 - [ ] **Phase 5: Cover Management** - Cover image upload and back cover content
 - [ ] **Phase 6: Interior PDF Generation** - KDP-compliant interior PDF with correct formatting
@@ -86,13 +86,13 @@ Plans:
   1. System automatically generates a TOC from chapter headings in the book
   2. User can manually edit TOC entries (rename, reorder, add, or remove entries)
   3. The TOC is included in the generated PDF output
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 **UI hint**: yes
 
 Plans:
-- [ ] 04-01: Auto-generated TOC from chapter headings
-- [ ] 04-02: Editable TOC UI (rename, reorder, add, remove)
-- [ ] 04-03: TOC integration with PDF output pipeline
+- [x] 04-01-PLAN.md — Auto-generated TOC from chapter headings (Wave 1)
+- [x] 04-02-PLAN.md — Editable TOC UI (rename, reorder, add, remove) (Wave 2)
+- [ ] 04-03-PLAN.md — TOC integration with PDF output pipeline (Wave 3)
 
 ### Phase 5: Cover Management
 **Goal**: Users can upload cover images and provide back cover content for their books
@@ -170,9 +170,19 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation & Book Management | 0/5 | Not started | - |
 | 2. Content Editor | 4/4 | Completed |  |
-| 3. File Import | 0/3 | Not started | - |
-| 4. Table of Contents | 0/3 | Not started | - |
+| 3. File Import | 3/3 | Complete   | 2026-03-31 |
+| 4. Table of Contents | 2/3 | In Progress|  |
 | 5. Cover Management | 0/3 | Not started | - |
 | 6. Interior PDF Generation | 0/5 | Not started | - |
 | 7. Cover PDF Generation | 0/2 | Not started | - |
 | 8. Export, Validation & Publishing Guide | 0/4 | Not started | - |
+
+## Phase 04: Table of Contents
+
+### Wave Structure
+
+| Wave | Plans | Dependencies | Files Modified |
+|------|-------|--------------|----------------|
+| 1 | 04-01 | None | 4 files |
+| 2 | 04-02 | 04-01 | 6 files |
+| 3 | 04-03 | 04-02 | 4 files |

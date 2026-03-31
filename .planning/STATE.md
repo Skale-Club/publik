@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 02-content-editor-04-PLAN.md
-last_updated: "2026-03-31T01:54:48.446Z"
+status: verifying
+stopped_at: Completed 03-file-import phase (3 plans)
+last_updated: "2026-03-31T02:27:14.156Z"
 last_activity: 2026-03-31
 progress:
-  total_phases: 8
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
+  total_phases: 9
+  completed_phases: 3
+  total_plans: 15
+  completed_plans: 14
   percent: 0
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 1 of 8 (Foundation & Book Management)
-Plan: 4 of 5 in current phase
-Status: Ready to execute
+Plan: 5 of 5 in current phase
+Status: Phase complete — ready for verification
 Last activity: 2026-03-31
 
 Progress: [░░░░░░░░░░] 0%
@@ -68,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 02-content-editor]: Used TipTap 3.x headless editor with custom toolbar for book chapter editing
 - [Phase 02-content-editor]: Image insertion uses local filesystem storage with public URL paths
 - [Phase 02-content-editor]: Auto-save with 800ms debounce using Server Actions
+- [Phase 04-table-of-contents]: Used @dnd-kit for drag-and-drop (standard React DnD library)
+- [Phase 04-table-of-contents]: Stored custom entries in DB with isCustom flag for persistence
+- [Phase 04-table-of-contents]: Bi-directional sync between headings and stored entries
 
 ### Pending Todos
 
@@ -81,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T01:54:48.443Z
-Stopped at: Completed 02-content-editor-04-PLAN.md
+Last session: 2026-03-31T02:07:36.900Z
+Stopped at: Completed 03-file-import phase (3 plans)
 Resume file: None

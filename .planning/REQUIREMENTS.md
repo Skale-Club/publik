@@ -21,15 +21,15 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **EDIT-01**: User can write and edit book content in a rich text editor
 - [x] **EDIT-02**: User can create and manage chapters/sections within a book
 - [x] **EDIT-03**: User can insert images into book content
-- [ ] **EDIT-04**: Content auto-saves as user types
-- [ ] **EDIT-05**: User can import DOCX files into the editor
-- [ ] **EDIT-06**: User can import PDF files into the editor
-- [ ] **EDIT-07**: User can import images into the editor
+- [x] **EDIT-04**: Content auto-saves as user types
+- [x] **EDIT-05**: User can import DOCX files into the editor
+- [x] **EDIT-06**: User can import PDF files into the editor
+- [x] **EDIT-07**: User can import images into the editor
 
 ### Table of Contents
 
 - [ ] **TOC-01**: System auto-generates table of contents from chapter headings
-- [ ] **TOC-02**: User can manually edit TOC entries
+- [x] **TOC-02**: User can manually edit TOC entries
 - [ ] **TOC-03**: TOC is included in the generated PDF output
 
 ### PDF Generation
@@ -114,12 +114,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EDIT-01 | Phase 2 | Complete |
 | EDIT-02 | Phase 2 | Complete |
 | EDIT-03 | Phase 2 | Complete |
-| EDIT-04 | Phase 2 | Pending |
-| EDIT-05 | Phase 3 | Pending |
-| EDIT-06 | Phase 3 | Pending |
-| EDIT-07 | Phase 3 | Pending |
+| EDIT-04 | Phase 2 | Complete |
+| EDIT-05 | Phase 3 | Complete |
+| EDIT-06 | Phase 3 | Complete |
+| EDIT-07 | Phase 3 | Complete |
 | TOC-01 | Phase 4 | Pending |
-| TOC-02 | Phase 4 | Pending |
+| TOC-02 | Phase 4 | Complete |
 | TOC-03 | Phase 4 | Pending |
 | PDF-01 | Phase 6 | Pending |
 | PDF-02 | Phase 6 | Pending |
