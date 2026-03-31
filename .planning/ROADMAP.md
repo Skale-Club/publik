@@ -60,7 +60,7 @@ Plans:
 - [x] 02-01-PLAN.md — TipTap editor integration with rich text formatting (Wave 2)
 - [x] 02-02-PLAN.md — Chapter management (create, rename, reorder, delete) (Wave 1)
 - [x] 02-03-PLAN.md — Image insertion in editor content (Wave 3)
-- [ ] 02-04-PLAN.md — Auto-save with debounced server sync (Wave 4)
+- [x] 02-04-PLAN.md — Auto-save with debounced server sync (Wave 4)
 
 ### Phase 3: File Import
 **Goal**: Users can import existing manuscripts from DOCX, PDF, and image files into the editor
@@ -169,7 +169,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Book Management | 0/5 | Not started | - |
-| 2. Content Editor | 3/4 | In Progress|  |
+| 2. Content Editor | 4/4 | Completed |  |
 | 3. File Import | 0/3 | Not started | - |
 | 4. Table of Contents | 0/3 | Not started | - |
 | 5. Cover Management | 0/3 | Not started | - |
