@@ -15,14 +15,18 @@ import {
   Undo,
   Redo,
   AlignLeft,
+  Image as ImageIcon,
 } from "lucide-react"
+import { useState, useRef } from "react"
+import { toast } from "sonner"
 import { clsx } from "clsx"
 
 interface EditorToolbarProps {
   editor: Editor | null
+  bookId?: string
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, bookId }: EditorToolbarProps) {
   if (!editor) {
     return null
   }
@@ -156,6 +160,94 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       >
         <Redo className="w-4 h-4" />
       </button>
+
+      <div className="w-px bg-gray-300 mx-1" />
+
+      {/* Image Upload */}
+      <ImageUploadButton editor={editor} bookId={bookId} />
     </div>
+  )
+}
+
+function ImageUploadButton({ editor, bookId }: { editor: Editor; bookId?: string }) {
+  const [isUploading, setIsUploading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const buttonClass = (isActive: boolean) =>
+    clsx(
+      "p-2 rounded hover:bg-gray-100 transition-colors",
+      isActive ? "bg-gray-200 text-blue-600" : "text-gray-700"
+    )
+
+  const handleClick = () => {
+    inputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!bookId) {
+      toast.error("Please save the book first before adding images")
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("bookId", bookId)
+
+      const response = await fetch("/api/upload/image", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upload failed")
+      }
+
+      editor.chain().focus().setImage({ src: data.url }).run()
+      toast.success("Image inserted")
+    } catch (error) {
+      console.error("Image upload error:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to upload image")
+    } finally {
+      setIsUploading(false)
+      // Reset input
+      if (inputRef.current) {
+        inputRef.current.value = ""
+      }
+    }
+  }
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isUploading}
+        className={clsx(
+          buttonClass(false),
+          isUploading && "opacity-40 cursor-not-allowed"
+        )}
+        title="Insert Image"
+      >
+        {isUploading ? (
+          <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
+        ) : (
+          <ImageIcon className="w-4 h-4" />
+        )}
+      </button>
+    </>
   )
 }

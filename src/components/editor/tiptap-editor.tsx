@@ -4,6 +4,7 @@ import { useEditor as useTiptapEditor, EditorContent, Editor } from "@tiptap/rea
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import Underline from "@tiptap/extension-underline"
+import Image from "@tiptap/extension-image"
 import { useEffect, useImperativeHandle, forwardRef, useRef, useState } from "react"
 
 interface TipTapEditorProps {
@@ -35,6 +36,10 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
           placeholder,
         }),
         Underline,
+        Image.configure({
+          inline: false,
+          allowBase64: true,
+        }),
       ],
       content: content || "",
       editable,
