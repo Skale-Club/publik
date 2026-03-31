@@ -4,12 +4,25 @@ import path from "path"
 
 let db: Database | null = null
 let dbPath: string = ""
+let wasmPath: string | null = null
 
 function getDbPath(): string {
   if (!dbPath) {
     dbPath = path.join(process.cwd(), "publik.db")
   }
   return dbPath
+}
+
+function getWasmPath(): string {
+  if (!wasmPath) {
+    wasmPath = path.join(process.cwd(), "public", "vendor", "sql.js", "sql-wasm.wasm")
+  }
+
+  if (!fs.existsSync(wasmPath)) {
+    throw new Error(`sql.js wasm not found at ${wasmPath}`)
+  }
+
+  return wasmPath
 }
 
 function ensureSchema(database: Database) {
@@ -97,7 +110,9 @@ function ensureSchema(database: Database) {
 export async function initDb(): Promise<Database> {
   if (db) return db
   
-  const SQL = await initSqlJs()
+  const SQL = await initSqlJs({
+    locateFile: () => getWasmPath(),
+  })
   const filePath = getDbPath()
   
   if (fs.existsSync(filePath)) {
