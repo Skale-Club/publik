@@ -70,13 +70,13 @@ Plans:
   1. User can import a DOCX file and see its content loaded into the editor with formatting preserved
   2. User can import a PDF file and see its text content available in the editor
   3. User can import image files directly into the book content
-**Plans**: TBD
+**Plans**: 3 plans in 1 wave
 **UI hint**: yes
 
 Plans:
-- [ ] 03-01: DOCX import pipeline (mammoth → HTML → TipTap content blocks)
-- [ ] 03-02: PDF import pipeline (text extraction → editor content)
-- [ ] 03-03: Image file import into editor
+- [x] 03-01-PLAN.md — DOCX import pipeline (mammoth → HTML → TipTap content blocks) (Wave 1)
+- [x] 03-02-PLAN.md — PDF import pipeline (text extraction → editor content) (Wave 1)
+- [x] 03-03-PLAN.md — Image file import into editor (Wave 1)
 
 ### Phase 4: Table of Contents
 **Goal**: Users have an auto-generated, editable table of contents that gets included in the final PDF output
