@@ -41,9 +41,9 @@ export default async function DashboardPage() {
       </div>
 
       {books.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed py-12 text-center">
-          <p className="mb-4 text-gray-500">No books yet</p>
-          <Link href="/dashboard/books/new" className="text-blue-600 hover:underline">
+        <div className="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 py-12 text-center">
+          <p className="mb-4 text-gray-500 dark:text-gray-400">No books yet</p>
+          <Link href="/dashboard/books/new" className="text-blue-600 dark:text-blue-400 hover:underline">
             Create your first book
           </Link>
         </div>
