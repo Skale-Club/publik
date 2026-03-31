@@ -120,14 +120,14 @@ Plans:
   3. Generated PDF includes configurable headers and footers
   4. All fonts are fully embedded in the generated PDF (not subset)
   5. PDF page dimensions exactly match the selected trim size
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 06-01: Interior PDF engine with content layout pipeline
-- [ ] 06-02: Page numbers, headers, and footers
-- [ ] 06-03: Font embedding (bundled TTF/OTF, verified with pdffonts)
-- [ ] 06-04: KDP margin and bleed compliance (mirror margins, gutter scaling by page count)
-- [ ] 06-05: Trim size dimension accuracy
+- [x] 06-01-PLAN.md — Interior PDF engine with KDP trim size mapping (Wave 1)
+- [ ] 06-02-PLAN.md — Page numbers, headers, and footers (Wave 2)
+- [ ] 06-03-PLAN.md — Font embedding (bundled TTF, verified with pdffonts) (Wave 2)
+- [ ] 06-04-PLAN.md — KDP margin and bleed compliance (mirror margins, gutter scaling) (Wave 3)
+- [ ] 06-05-PLAN.md — Trim size dimension accuracy (all 16 KDP sizes) (Wave 3)
 
 ### Phase 7: Cover PDF Generation
 **Goal**: Users can generate a single continuous KDP cover PDF (front + spine + back + bleed) with correctly calculated spine width
