@@ -1,4 +1,4 @@
-import { supabase, COVERS_BUCKET, IMAGES_BUCKET, ensureBucketExists } from "./supabase"
+import { getSupabaseAdmin, COVERS_BUCKET, IMAGES_BUCKET, ensureBucketExists } from "./supabase"
 import { nanoid } from "nanoid"
 
 function getExt(name: string): string {
@@ -10,6 +10,7 @@ export async function saveImage(
   file: File,
   bookId: string,
 ): Promise<{ url: string }> {
+  const supabase = getSupabaseAdmin()
   await ensureBucketExists(IMAGES_BUCKET)
 
   const ext = getExt(file.name)
@@ -41,6 +42,7 @@ export async function saveCoverImage(
   bookId: string,
   coverType: "front" | "back",
 ): Promise<{ url: string }> {
+  const supabase = getSupabaseAdmin()
   await ensureBucketExists(COVERS_BUCKET)
 
   const ext = getExt(file.name)
@@ -68,5 +70,6 @@ export async function saveCoverImage(
 }
 
 export async function deleteFile(bucketName: string, path: string): Promise<void> {
+  const supabase = getSupabaseAdmin()
   await supabase.storage.from(bucketName).remove([path])
 }
