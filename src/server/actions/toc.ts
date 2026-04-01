@@ -64,9 +64,9 @@ function mapRow(row: typeof tocEntries.$inferSelect): TOCEntryResponse {
     level: row.level,
     anchorId: row.anchorId,
     position: row.position,
-    isCustom: row.isCustom,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
+    isCustom: !!row.isCustom,
+    createdAt: String(row.createdAt),
+    updatedAt: String(row.updatedAt),
   }
 }
 
@@ -90,7 +90,7 @@ export async function updateTOCEntry(
 
     await db
       .update(tocEntries)
-      .set({ title: validated.title, isCustom: true, updatedAt: now })
+      .set({ title: validated.title, isCustom: 1, updatedAt: now })
       .where(eq(tocEntries.id, validated.id))
 
     const rows = await db.select().from(tocEntries).where(eq(tocEntries.id, validated.id))
@@ -161,7 +161,7 @@ export async function addTOCEntry(
       level: validated.level,
       anchorId: null,
       position: pos,
-      isCustom: true,
+      isCustom: 1,
       createdAt: now,
       updatedAt: now,
     })
@@ -252,7 +252,7 @@ export async function syncTOC(
           level: anchor.level,
           anchorId: anchor.id,
           position: index,
-          isCustom: false,
+          isCustom: 0,
           createdAt: now,
           updatedAt: now,
         })

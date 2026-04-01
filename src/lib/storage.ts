@@ -1,34 +1,72 @@
-"use server"
+import { supabase, COVERS_BUCKET, IMAGES_BUCKET, ensureBucketExists } from "./supabase"
+import { nanoid } from "nanoid"
 
-import { writeFile, mkdir, unlink } from "fs/promises"
-import { existsSync } from "fs"
-import { join } from "path"
-
-const UPLOAD_DIR = "public/uploads/books"
-
-export async function saveImage(file: File, bookId: string): Promise<{ url: string; path: string }> {
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-  
-  const ext = file.name.split(".").pop() || "png"
-  const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-  const dir = join(process.cwd(), UPLOAD_DIR, bookId)
-  
-  if (!existsSync(dir)) {
-    await mkdir(dir, { recursive: true })
-  }
-  
-  const filepath = join(dir, filename)
-  await writeFile(filepath, buffer)
-  
-  const url = `/uploads/books/${bookId}/${filename}`
-  return { url, path: filepath }
+function getExt(name: string): string {
+  const parts = name.split(".")
+  return parts.length > 1 ? `.${parts[parts.length - 1]}` : ""
 }
 
-export async function deleteImage(filepath: string): Promise<void> {
-  try {
-    await unlink(filepath)
-  } catch {
-    // File may not exist
+export async function saveImage(
+  file: File,
+  bookId: string,
+): Promise<{ url: string }> {
+  await ensureBucketExists(IMAGES_BUCKET)
+
+  const ext = getExt(file.name)
+  const filename = `${nanoid()}${ext}`
+  const path = `${bookId}/${filename}`
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  const { error } = await supabase.storage
+    .from(IMAGES_BUCKET)
+    .upload(path, buffer, {
+      contentType: file.type,
+      upsert: true,
+    })
+
+  if (error) {
+    throw new Error(`Upload failed: ${error.message}`)
   }
+
+  const { data: urlData } = supabase.storage
+    .from(IMAGES_BUCKET)
+    .getPublicUrl(path)
+
+  return { url: urlData.publicUrl }
+}
+
+export async function saveCoverImage(
+  file: File,
+  bookId: string,
+  coverType: "front" | "back",
+): Promise<{ url: string }> {
+  await ensureBucketExists(COVERS_BUCKET)
+
+  const ext = getExt(file.name)
+  const filename = `${coverType}${ext}`
+  const path = `${bookId}/${filename}`
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  const { error } = await supabase.storage
+    .from(COVERS_BUCKET)
+    .upload(path, buffer, {
+      contentType: file.type,
+      upsert: true,
+    })
+
+  if (error) {
+    throw new Error(`Cover upload failed: ${error.message}`)
+  }
+
+  const { data: urlData } = supabase.storage
+    .from(COVERS_BUCKET)
+    .getPublicUrl(path)
+
+  return { url: urlData.publicUrl }
+}
+
+export async function deleteFile(bucketName: string, path: string): Promise<void> {
+  await supabase.storage.from(bucketName).remove([path])
 }

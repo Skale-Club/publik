@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       level: row.level,
       anchorId: row.anchorId,
       position: row.position,
-      isCustom: row.isCustom,
+      isCustom: Boolean(row.isCustom),
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
     }))

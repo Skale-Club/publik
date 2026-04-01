@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
-import { saveImage } from "@/lib/storage"
+import { saveCoverImage } from "@/lib/storage"
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/tiff", "image/webp"]
-const MAX_SIZE = 50 * 1024 * 1024 // 50MB - KDP requirement
+const MAX_SIZE = 50 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File | null
     const bookId = formData.get("bookId") as string | null
-    const coverType = formData.get("coverType") as string | null // 'front' or 'back'
+    const coverType = formData.get("coverType") as string | null
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
@@ -37,11 +37,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Save with cover-specific subfolder
-    const subfolder = `covers/${coverType}`
-    const { url } = await saveImage(file, `${bookId}/${subfolder}`)
-    
-    // Return the URL - dimensions will be validated client-side before upload
+    const { url } = await saveCoverImage(file, bookId, coverType as "front" | "back")
+
     return NextResponse.json({ url })
   } catch (error) {
     console.error("Cover upload error:", error)
