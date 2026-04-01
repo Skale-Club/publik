@@ -9,6 +9,8 @@ jobs:
   keepalive:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DATABASE_URL }}
 
     steps:
       - name: Check out repository
@@ -28,7 +30,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate keepalive configuration
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Missing GitHub Actions secret: set DATABASE_URL (preferred) or SUPABASE_DATABASE_URL."
+            exit 1
+          fi
+
       - name: Run Supabase keepalive query
-        env:
-          DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
         run: pnpm keepalive:supabase
