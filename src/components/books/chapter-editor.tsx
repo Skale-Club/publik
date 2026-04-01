@@ -55,7 +55,7 @@ export function ChapterEditor({ bookId, chapter: initialChapter }: ChapterEditor
     <div>
       <div className="flex items-center justify-between mb-4">
         <Link
-          href={`/dashboard/books/${bookId}`}
+          href={`/books/${bookId}`}
           className="text-blue-600 hover:underline"
         >
           ← Back to Book

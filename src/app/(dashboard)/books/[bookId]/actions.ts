@@ -4,17 +4,16 @@ import { revalidatePath } from "next/cache"
 import { nanoid } from "nanoid"
 import { bookCreateSchema, bookUpdateSchema } from "@/domain/book/book-validator"
 import { chapterCreateSchema, chapterUpdateSchema } from "@/domain/book/chapter-validator"
-import { getDb, initDb, saveDb } from "@/infrastructure/db/client"
 import { Chapter } from "@/domain/book/chapter"
-
-async function getReadyDb() {
-  await initDb()
-  return getDb()
-}
+import { db } from "@/infrastructure/db/client"
+import { books } from "@/infrastructure/db/schema/books"
+import { chapters } from "@/infrastructure/db/schema/chapters"
+import { eq, isNull, desc, asc, and, sql } from "drizzle-orm"
 
 export async function createBook(formData: FormData) {
   const raw = {
     title: formData.get("title") as string,
+    author: (formData.get("author") as string) || undefined,
     description: (formData.get("description") as string) || undefined,
     trimSizeId: (formData.get("trimSizeId") as string) || undefined,
     paperType: (formData.get("paperType") as string) || undefined,
@@ -23,25 +22,27 @@ export async function createBook(formData: FormData) {
   }
 
   const validated = bookCreateSchema.parse(raw)
-
-  const db = await getReadyDb()
   const id = nanoid()
-  const now = new Date().toISOString()
-  
-  db.run(
-    `INSERT INTO books (id, title, description, trim_size_id, paper_type, ink_type, cover_finish, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, validated.title, validated.description || null, validated.trimSizeId, validated.paperType, validated.inkType, validated.coverFinish, now, now]
-  )
-  saveDb()
 
-  revalidatePath("/dashboard")
+  await db.insert(books).values({
+    id,
+    title: validated.title,
+    author: validated.author,
+    description: validated.description ?? null,
+    trimSizeId: validated.trimSizeId,
+    paperType: validated.paperType,
+    inkType: validated.inkType,
+    coverFinish: validated.coverFinish,
+  })
+
+  revalidatePath("/")
   return { id }
 }
 
 export async function updateBook(bookId: string, formData: FormData) {
   const raw = {
     title: formData.get("title") as string,
+    author: (formData.get("author") as string) || undefined,
     description: (formData.get("description") as string) || undefined,
     trimSizeId: (formData.get("trimSizeId") as string) || undefined,
     paperType: (formData.get("paperType") as string) || undefined,
@@ -50,103 +51,77 @@ export async function updateBook(bookId: string, formData: FormData) {
   }
 
   const validated = bookUpdateSchema.parse(raw)
-  
-  const db = await getReadyDb()
-  const now = new Date().toISOString()
-  
-  const updates: string[] = []
-  const values: any[] = []
-  
-  if (validated.title !== undefined) { updates.push("title = ?"); values.push(validated.title) }
-  if (validated.description !== undefined) { updates.push("description = ?"); values.push(validated.description) }
-  if (validated.trimSizeId !== undefined) { updates.push("trim_size_id = ?"); values.push(validated.trimSizeId) }
-  if (validated.paperType !== undefined) { updates.push("paper_type = ?"); values.push(validated.paperType) }
-  if (validated.inkType !== undefined) { updates.push("ink_type = ?"); values.push(validated.inkType) }
-  if (validated.coverFinish !== undefined) { updates.push("cover_finish = ?"); values.push(validated.coverFinish) }
-  updates.push("updated_at = ?")
-  values.push(now)
-  values.push(bookId)
-  
-  db.run(`UPDATE books SET ${updates.join(", ")} WHERE id = ?`, values)
-  saveDb()
 
-  revalidatePath("/dashboard")
-  revalidatePath(`/dashboard/books/${bookId}`)
+  const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() }
+  if (validated.title !== undefined) updates.title = validated.title
+  if (validated.author !== undefined) updates.author = validated.author
+  if (validated.description !== undefined) updates.description = validated.description
+  if (validated.trimSizeId !== undefined) updates.trimSizeId = validated.trimSizeId
+  if (validated.paperType !== undefined) updates.paperType = validated.paperType
+  if (validated.inkType !== undefined) updates.inkType = validated.inkType
+  if (validated.coverFinish !== undefined) updates.coverFinish = validated.coverFinish
+
+  await db.update(books).set(updates).where(eq(books.id, bookId))
+
+  revalidatePath("/")
+  revalidatePath(`/books/${bookId}`)
 }
 
 export async function deleteBook(bookId: string) {
-  const db = await getReadyDb()
   const now = new Date().toISOString()
-  
-  db.run(`UPDATE books SET deleted_at = ? WHERE id = ?`, [now, bookId])
-  saveDb()
-
-  revalidatePath("/dashboard")
+  await db.update(books).set({ deletedAt: now, updatedAt: now }).where(eq(books.id, bookId))
+  revalidatePath("/")
 }
 
 export async function createChapter(bookId: string, title: string): Promise<{ id: string }> {
   const validated = chapterCreateSchema.parse({ title })
-  
-  const db = await getReadyDb()
   const id = nanoid()
   const now = new Date().toISOString()
-  
-  const result = db.exec(`SELECT MAX("order") as maxOrder FROM chapters WHERE book_id = '${bookId}' AND deleted_at IS NULL`)
-  const maxOrder = result[0]?.values[0]?.[0] as number | null
-  const order = (maxOrder ?? -1) + 1
-  
-  db.run(
-    `INSERT INTO chapters (id, book_id, title, "order", content, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [id, bookId, validated.title, order, null, now, now]
-  )
-  saveDb()
 
-  revalidatePath(`/dashboard/books/${bookId}`)
+  const maxResult = await db
+    .select({ value: sql<number>`coalesce(max(${chapters.order}), -1)` })
+    .from(chapters)
+    .where(and(eq(chapters.bookId, bookId), isNull(chapters.deletedAt)))
+
+  const order = (maxResult[0]?.value ?? -1) + 1
+
+  await db.insert(chapters).values({
+    id,
+    bookId,
+    title: validated.title,
+    order,
+    createdAt: now,
+    updatedAt: now,
+  })
+
+  revalidatePath(`/books/${bookId}`)
   return { id }
 }
 
 export async function updateChapter(chapterId: string, bookId: string, data: { title?: string; content?: string }) {
   const validated = chapterUpdateSchema.parse(data)
-  
-  const db = await getReadyDb()
-  const now = new Date().toISOString()
-  
-  const updates: string[] = []
-  const values: any[] = []
-  
-  if (validated.title !== undefined) { updates.push("title = ?"); values.push(validated.title) }
-  if (validated.content !== undefined) { updates.push("content = ?"); values.push(validated.content) }
-  updates.push("updated_at = ?")
-  values.push(now)
-  values.push(chapterId)
-  
-  if (updates.length > 1) {
-    db.run(`UPDATE chapters SET ${updates.join(", ")} WHERE id = ?`, values)
-    saveDb()
+
+  const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() }
+  if (validated.title !== undefined) updates.title = validated.title
+  if (validated.content !== undefined) updates.content = validated.content
+
+  if (Object.keys(updates).length > 1) {
+    await db.update(chapters).set(updates).where(eq(chapters.id, chapterId))
   }
 
-  revalidatePath(`/dashboard/books/${bookId}`)
+  revalidatePath(`/books/${bookId}`)
 }
 
 export async function deleteChapter(chapterId: string, bookId: string) {
-  const db = await getReadyDb()
   const now = new Date().toISOString()
-  
-  db.run(`UPDATE chapters SET deleted_at = ? WHERE id = ?`, [now, chapterId])
-  saveDb()
-
-  revalidatePath(`/dashboard/books/${bookId}`)
+  await db.update(chapters).set({ deletedAt: now, updatedAt: now }).where(eq(chapters.id, chapterId))
+  revalidatePath(`/books/${bookId}`)
 }
 
 export async function updateChapterContent(chapterId: string, content: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = await getReadyDb()
     const now = new Date().toISOString()
-    
-    db.run(`UPDATE chapters SET content = ?, updated_at = ? WHERE id = ?`, [content, now, chapterId])
-    saveDb()
-
+    await db.update(chapters).set({ content, updatedAt: now }).where(eq(chapters.id, chapterId))
     return { success: true }
   } catch (error) {
     console.error("Failed to update chapter content:", error)
@@ -155,33 +130,29 @@ export async function updateChapterContent(chapterId: string, content: string): 
 }
 
 export async function getChapters(bookId: string): Promise<Chapter[]> {
-  await initDb()
-  const db = getDb()
-  
-  const result = db.exec(`SELECT * FROM chapters WHERE book_id = '${bookId}' AND deleted_at IS NULL ORDER BY "order" ASC`)
-  
-  if (result.length === 0 || result[0].values.length === 0) {
-    return []
-  }
-  
-  const columns = result[0].columns
-  return result[0].values.map((row) => {
-    const chapter: any = {}
-    columns.forEach((col, i) => {
-      chapter[col === "book_id" ? "bookId" : col === "created_at" ? "createdAt" : col === "updated_at" ? "updatedAt" : col === "deleted_at" ? "deletedAt" : col] = row[i]
-    })
-    return chapter as Chapter
-  })
+  const rows = await db
+    .select()
+    .from(chapters)
+    .where(and(eq(chapters.bookId, bookId), isNull(chapters.deletedAt)))
+    .orderBy(asc(chapters.order))
+
+  return rows.map((row) => ({
+    id: row.id,
+    bookId: row.bookId,
+    title: row.title,
+    order: row.order,
+    content: row.content,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deletedAt: row.deletedAt,
+  }))
 }
 
 export async function reorderChapters(bookId: string, chapterIds: string[]): Promise<void> {
-  const db = await getReadyDb()
   const now = new Date().toISOString()
-  
-  chapterIds.forEach((chapterId, index) => {
-    db.run(`UPDATE chapters SET "order" = ?, updated_at = ? WHERE id = ?`, [index, now, chapterId])
-  })
-  
-  saveDb()
-  revalidatePath(`/dashboard/books/${bookId}`)
+  for (let i = 0; i < chapterIds.length; i++) {
+    await db.update(chapters).set({ order: i, updatedAt: now }).where(eq(chapters.id, chapterIds[i]))
+  }
+
+  revalidatePath(`/books/${bookId}`)
 }

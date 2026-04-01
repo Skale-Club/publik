@@ -1,9 +1,10 @@
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core"
 import { sql } from "drizzle-orm"
+import { books } from "./books"
 
 export const tocEntries = sqliteTable("toc_entries", {
   id: text("id").primaryKey(),
-  bookId: text("book_id").notNull(),
+  bookId: text("book_id").notNull().references(() => books.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   level: integer("level").notNull().default(1),
   anchorId: text("anchor_id"),

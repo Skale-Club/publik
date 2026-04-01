@@ -34,6 +34,21 @@ export function BookSettingsForm({ book }: BookSettingsFormProps) {
           className="w-full px-3 py-2 border rounded-md"
         />
       </div>
+
+      <div>
+        <label htmlFor="author" className="block text-sm font-medium mb-1">
+          Author
+        </label>
+        <input
+          id="author"
+          name="author"
+          type="text"
+          defaultValue={book.author || ""}
+          required
+          maxLength={200}
+          className="w-full px-3 py-2 border rounded-md"
+        />
+      </div>
       
       <div>
         <label htmlFor="description" className="block text-sm font-medium mb-1">

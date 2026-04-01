@@ -5,6 +5,7 @@ const trimSizeIds = KDP_TRIM_SIZES.map((s) => s.id)
 
 export const bookCreateSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be 200 characters or less"),
+  author: z.string().min(1, "Author is required").max(200, "Author must be 200 characters or less").default("Author"),
   description: z.string().max(2000, "Description must be 2000 characters or less").optional(),
   trimSizeId: z.enum(trimSizeIds as [string, ...string[]]).default("6x9"),
   paperType: z.enum(["white", "cream"]).default("white"),
@@ -14,6 +15,7 @@ export const bookCreateSchema = z.object({
 
 export const bookUpdateSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be 200 characters or less").optional(),
+  author: z.string().min(1, "Author is required").max(200, "Author must be 200 characters or less").optional(),
   description: z.string().max(2000, "Description must be 2000 characters or less").optional().nullable(),
   trimSizeId: z.enum(trimSizeIds as [string, ...string[]]).optional(),
   paperType: z.enum(["white", "cream"]).optional(),

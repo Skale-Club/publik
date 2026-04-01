@@ -3,19 +3,11 @@
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import type { Anchor } from "@/types/toc"
-import { initDb } from "@/infrastructure/db/client"
-import {
-  getTOCEntriesForBook,
-  getTOCEntryById,
-  updateTOCEntryTitle,
-  reorderTOCEntries,
-  addCustomTOCEntry,
-  removeTOCEntry,
-  syncTOCWithHeadings,
-  type TOCEntryRow,
-} from "@/lib/toc/sync"
+import { db } from "@/infrastructure/db/client"
+import { tocEntries } from "@/infrastructure/db/schema/toc"
+import { eq, isNull, asc, sql, and } from "drizzle-orm"
+import { nanoid } from "nanoid"
 
-// Validation schemas
 const updateTOCEntrySchema = z.object({
   id: z.string().min(1, "Entry ID is required"),
   title: z.string().min(1, "Title is required").max(200, "Title must be 200 characters or less"),
@@ -52,7 +44,6 @@ const syncTOCSchema = z.object({
   ),
 })
 
-// Types for responses
 export interface TOCEntryResponse {
   id: string
   bookId: string
@@ -65,10 +56,7 @@ export interface TOCEntryResponse {
   updatedAt: string
 }
 
-/**
- * Convert internal row to response type
- */
-function rowToResponse(row: TOCEntryRow): TOCEntryResponse {
+function mapRow(row: typeof tocEntries.$inferSelect): TOCEntryResponse {
   return {
     id: row.id,
     bookId: row.bookId,
@@ -82,34 +70,37 @@ function rowToResponse(row: TOCEntryRow): TOCEntryResponse {
   }
 }
 
-/**
- * Get all TOC entries for a book
- */
 export async function getTOCEntries(bookId: string): Promise<TOCEntryResponse[]> {
-  await initDb()
-  const entries = getTOCEntriesForBook(bookId)
-  return entries.map(rowToResponse)
+  const rows = await db
+    .select()
+    .from(tocEntries)
+    .where(and(eq(tocEntries.bookId, bookId), isNull(tocEntries.deletedAt)))
+    .orderBy(asc(tocEntries.position))
+
+  return rows.map(mapRow)
 }
 
-/**
- * Update a TOC entry's title
- */
 export async function updateTOCEntry(
   id: string,
   title: string
 ): Promise<{ success: boolean; entry?: TOCEntryResponse; error?: string }> {
   try {
-    await initDb()
     const validated = updateTOCEntrySchema.parse({ id, title })
-    
-    const updated = updateTOCEntryTitle(validated.id, validated.title)
-    
-    if (!updated) {
+    const now = new Date().toISOString()
+
+    await db
+      .update(tocEntries)
+      .set({ title: validated.title, isCustom: true, updatedAt: now })
+      .where(eq(tocEntries.id, validated.id))
+
+    const rows = await db.select().from(tocEntries).where(eq(tocEntries.id, validated.id))
+    const row = rows[0]
+    if (!row || row.deletedAt) {
       return { success: false, error: "Entry not found" }
     }
-    
-    revalidatePath(`/dashboard/books/[bookId]`)
-    return { success: true, entry: rowToResponse(updated) }
+
+    revalidatePath(`/books/${row.bookId}`)
+    return { success: true, entry: mapRow(row) }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0].message }
@@ -118,20 +109,22 @@ export async function updateTOCEntry(
   }
 }
 
-/**
- * Reorder TOC entries based on new position array
- */
 export async function reorderTOCEntriesAction(
   bookId: string,
   entryIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await initDb()
     const validated = reorderTOCEntriesSchema.parse({ bookId, entryIds })
-    
-    reorderTOCEntries(validated.bookId, validated.entryIds)
-    
-    revalidatePath(`/dashboard/books/[bookId]`)
+    const now = new Date().toISOString()
+
+    for (let i = 0; i < validated.entryIds.length; i++) {
+      await db
+        .update(tocEntries)
+        .set({ position: i, updatedAt: now })
+        .where(eq(tocEntries.id, validated.entryIds[i]))
+    }
+
+    revalidatePath(`/books/${validated.bookId}`)
     return { success: true }
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -141,9 +134,6 @@ export async function reorderTOCEntriesAction(
   }
 }
 
-/**
- * Add a custom TOC entry
- */
 export async function addTOCEntry(
   bookId: string,
   title: string,
@@ -151,17 +141,36 @@ export async function addTOCEntry(
   position?: number
 ): Promise<{ success: boolean; entry?: TOCEntryResponse; error?: string }> {
   try {
-    await initDb()
     const validated = addTOCEntrySchema.parse({ bookId, title, level, position })
-    
-    const entry = addCustomTOCEntry(validated.bookId, {
+    const id = nanoid()
+    const now = new Date().toISOString()
+
+    let pos = validated.position
+    if (pos === undefined) {
+      const maxResult = await db
+        .select({ value: sql<number>`coalesce(max(${tocEntries.position}), -1)` })
+        .from(tocEntries)
+        .where(and(eq(tocEntries.bookId, validated.bookId), isNull(tocEntries.deletedAt)))
+      pos = (maxResult[0]?.value ?? -1) + 1
+    }
+
+    await db.insert(tocEntries).values({
+      id,
+      bookId: validated.bookId,
       title: validated.title,
       level: validated.level,
-      position: validated.position,
+      anchorId: null,
+      position: pos,
+      isCustom: true,
+      createdAt: now,
+      updatedAt: now,
     })
-    
-    revalidatePath(`/dashboard/books/[bookId]`)
-    return { success: true, entry: rowToResponse(entry) }
+
+    const rows = await db.select().from(tocEntries).where(eq(tocEntries.id, id))
+    const row = rows[0]
+
+    revalidatePath(`/books/${validated.bookId}`)
+    return { success: true, entry: row ? mapRow(row) : undefined }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0].message }
@@ -170,19 +179,21 @@ export async function addTOCEntry(
   }
 }
 
-/**
- * Remove a TOC entry
- */
 export async function removeTOCEntryAction(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await initDb()
     const validated = removeTOCEntrySchema.parse({ id })
-    
-    removeTOCEntry(validated.id)
-    
-    revalidatePath(`/dashboard/books/[bookId]`)
+    const now = new Date().toISOString()
+
+    await db
+      .update(tocEntries)
+      .set({ updatedAt: now, deletedAt: now })
+      .where(eq(tocEntries.id, validated.id))
+
+    const rows = await db.select().from(tocEntries).where(eq(tocEntries.id, validated.id))
+
+    revalidatePath(`/books/${rows[0]?.bookId ?? ""}`)
     return { success: true }
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -192,21 +203,65 @@ export async function removeTOCEntryAction(
   }
 }
 
-/**
- * Sync TOC entries with editor headings
- */
 export async function syncTOC(
   bookId: string,
   anchors: Anchor[]
 ): Promise<{ success: boolean; result?: { added: number; updated: number; preserved: number }; error?: string }> {
   try {
-    await initDb()
     const validated = syncTOCSchema.parse({ bookId, anchors })
-    
-    const result = syncTOCWithHeadings(validated.bookId, validated.anchors)
-    
-    revalidatePath(`/dashboard/books/[bookId]`)
-    return { success: true, result }
+
+    const existing = await db
+      .select()
+      .from(tocEntries)
+      .where(and(eq(tocEntries.bookId, validated.bookId), isNull(tocEntries.deletedAt)))
+      .orderBy(asc(tocEntries.position))
+
+    const anchorMap = new Map(validated.anchors.map((a) => [a.id, a]))
+    const entryAnchorMap = new Map(
+      existing.filter((e) => e.anchorId).map((e) => [e.anchorId!, e])
+    )
+
+    let added = 0
+    let updated = 0
+    let preserved = 0
+    const now = new Date().toISOString()
+
+    for (const entry of existing) {
+      if (entry.anchorId && anchorMap.has(entry.anchorId)) {
+        const newPosition = validated.anchors.findIndex((a) => a.id === entry.anchorId)
+        if (entry.position !== newPosition) {
+          await db
+            .update(tocEntries)
+            .set({ position: newPosition, updatedAt: now })
+            .where(eq(tocEntries.id, entry.id))
+          updated++
+        } else {
+          preserved++
+        }
+      }
+    }
+
+    for (let index = 0; index < validated.anchors.length; index++) {
+      const anchor = validated.anchors[index]
+      if (!entryAnchorMap.has(anchor.id)) {
+        const id = nanoid()
+        await db.insert(tocEntries).values({
+          id,
+          bookId: validated.bookId,
+          title: anchor.textContent,
+          level: anchor.level,
+          anchorId: anchor.id,
+          position: index,
+          isCustom: false,
+          createdAt: now,
+          updatedAt: now,
+        })
+        added++
+      }
+    }
+
+    revalidatePath(`/books/${validated.bookId}`)
+    return { success: true, result: { added, updated, preserved } }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0].message }

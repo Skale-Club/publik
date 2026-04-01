@@ -12,6 +12,7 @@ import { defaultLayoutOptions, type LayoutOptions } from "./layout-options"
 import { PDFHeader } from "./components/page-header"
 import { PDFFooter } from "./components/page-footer"
 import { registerKDPFonts, getBodyFontFamily, getHeadingFontFamily, getCodeFontFamily } from "./font-registration"
+import { htmlToPDF } from "./html-to-pdf"
 
 // Register KDP fonts for PDF generation
 // Using registered fonts instead of system fonts for KDP compliance
@@ -30,10 +31,8 @@ const documentStyles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
-  content: {
-    fontSize: 12,
-    lineHeight: 1.5,
-    fontFamily: getBodyFontFamily(),
+  contentWrapper: {
+    flex: 1,
   },
   footer: {
     position: "absolute",
@@ -212,8 +211,10 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
               {chapter.title}
             </Text>
 
-            {/* Chapter content */}
-            <Text style={documentStyles.content}>{chapter.content}</Text>
+            {/* Chapter content - rendered from HTML */}
+            <View style={documentStyles.contentWrapper}>
+              {htmlToPDF(chapter.content)}
+            </View>
 
             {/* Footer with page number */}
             <PDFFooter layout={layout} />
@@ -268,7 +269,6 @@ export function InteriorDocumentWithPageNumbers(props: InteriorDocumentProps) {
         <TOCPageContent
           entries={pdfTocEntries.map((entry) => ({
             ...entry,
-            // Show "..." on first pass (unknown page numbers)
             pageNumber: undefined,
           }))}
         />
@@ -297,7 +297,10 @@ export function InteriorDocumentWithPageNumbers(props: InteriorDocumentProps) {
             {chapter.title}
           </Text>
 
-          <Text style={documentStyles.content}>{chapter.content}</Text>
+          {/* Chapter content - rendered from HTML */}
+          <View style={documentStyles.contentWrapper}>
+            {htmlToPDF(chapter.content)}
+          </View>
 
           <Text
             style={documentStyles.footer}

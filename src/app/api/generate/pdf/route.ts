@@ -1,36 +1,25 @@
-/**
- * PDF Generation API Endpoint
- * Generates PDF with TOC integration and KDP trim sizes
- */
-
 import { NextRequest, NextResponse } from "next/server"
 import { renderToStream } from "@react-pdf/renderer"
-import { getDb, initDb } from "@/infrastructure/db/client"
+import { db } from "@/infrastructure/db/client"
+import { books } from "@/infrastructure/db/schema/books"
+import { chapters as chaptersTable } from "@/infrastructure/db/schema/chapters"
+import { tocEntries } from "@/infrastructure/db/schema/toc"
 import { InteriorDocument, type BookSettings, type ChapterContent } from "@/lib/pdf/interior-document"
 import { isValidTrimSize } from "@/lib/pdf/page-layout"
+import { eq, isNull, asc, and } from "drizzle-orm"
 import type { TOCEntry } from "@/types/toc"
 
-export const maxDuration = 300 // 5 minutes for large documents
+export const maxDuration = 300
 
-/**
- * Estimate page count from chapter content
- * Rough estimate: ~500 words per page for standard 6x9 book
- */
 function estimatePageCount(chapters: ChapterContent[]): number {
   let totalWords = 0
   for (const chapter of chapters) {
-    // Count words in content (rough estimate)
     const words = chapter.content.split(/\s+/).filter(Boolean).length
     totalWords += words
   }
-  // 500 words per page, minimum 1 page
   return Math.max(1, Math.ceil(totalWords / 500))
 }
 
-/**
- * GET handler for PDF generation
- * Expects bookId as query parameter
- */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -40,106 +29,65 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "bookId is required" }, { status: 400 })
     }
 
-    await initDb()
-    const db = getDb()
-
-    // Fetch book
-    const bookResult = db.exec(`SELECT id, title, trim_size_id FROM books WHERE id = '${bookId}'`)
-    if (bookResult.length === 0 || bookResult[0].values.length === 0) {
+    const bookRows = await db.select().from(books).where(eq(books.id, bookId))
+    const bookRow = bookRows[0]
+    if (!bookRow || bookRow.deletedAt) {
       return NextResponse.json({ error: "Book not found" }, { status: 404 })
     }
 
-    const bookColumns = bookResult[0].columns
-    const bookValues = bookResult[0].values[0]
-    const bookTitle = String(bookValues[bookColumns.indexOf("title")])
-    const bookTrimSize = String(bookValues[bookColumns.indexOf("trim_size_id")])
+    const chapterRows = await db
+      .select()
+      .from(chaptersTable)
+      .where(and(eq(chaptersTable.bookId, bookId), isNull(chaptersTable.deletedAt)))
+      .orderBy(asc(chaptersTable.order))
 
-    // Fetch chapters ordered by position
-    const chaptersResult = db.exec(
-      `SELECT id, title, content FROM chapters WHERE book_id = '${bookId}' AND deleted_at IS NULL ORDER BY \`order\` ASC`
-    )
+    const chapterContents: ChapterContent[] = chapterRows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      anchorId: `chapter-${row.id}`,
+      content: row.content || "",
+      level: 1,
+    }))
 
-    const chapterContents: ChapterContent[] = []
-    if (chaptersResult.length > 0 && chaptersResult[0].values.length > 0) {
-      const chapterColumns = chaptersResult[0].columns
-      const idIdx = chapterColumns.indexOf("id")
-      const titleIdx = chapterColumns.indexOf("title")
-      const contentIdx = chapterColumns.indexOf("content")
+    const tocRows = await db
+      .select()
+      .from(tocEntries)
+      .where(eq(tocEntries.bookId, bookId))
+      .orderBy(asc(tocEntries.position))
 
-      chaptersResult[0].values.forEach((row: unknown[]) => {
-        const id = String(row[idIdx])
-        const title = String(row[titleIdx])
-        const content = row[contentIdx] ? String(row[contentIdx]) : ""
-        
-        chapterContents.push({
-          id,
-          title,
-          anchorId: `chapter-${id}`,
-          content,
-          level: 1,
-        })
-      })
-    }
+    const bookTocEntries: TOCEntry[] = tocRows.map((row) => ({
+      id: row.id,
+      bookId: row.bookId,
+      title: row.title,
+      level: row.level,
+      anchorId: row.anchorId,
+      position: row.position,
+      isCustom: row.isCustom,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    }))
 
-    // Fetch TOC entries ordered by position
-    const tocResult = db.exec(
-      `SELECT id, book_id, title, level, anchor_id, position, is_custom, created_at, updated_at 
-       FROM toc_entries WHERE book_id = '${bookId}' ORDER BY position ASC`
-    )
-
-    const bookTocEntries: TOCEntry[] = []
-    if (tocResult.length > 0 && tocResult[0].values.length > 0) {
-      const tocColumns = tocResult[0].columns
-      const idIdx = tocColumns.indexOf("id")
-      const bookIdIdx = tocColumns.indexOf("book_id")
-      const titleIdx = tocColumns.indexOf("title")
-      const levelIdx = tocColumns.indexOf("level")
-      const anchorIdIdx = tocColumns.indexOf("anchor_id")
-      const positionIdx = tocColumns.indexOf("position")
-      const isCustomIdx = tocColumns.indexOf("is_custom")
-      const createdAtIdx = tocColumns.indexOf("created_at")
-      const updatedAtIdx = tocColumns.indexOf("updated_at")
-
-      tocResult[0].values.forEach((row: unknown[]) => {
-        bookTocEntries.push({
-          id: String(row[idIdx]),
-          bookId: String(row[bookIdIdx]),
-          title: String(row[titleIdx]),
-          level: Number(row[levelIdx]),
-          anchorId: row[anchorIdIdx] ? String(row[anchorIdIdx]) : null,
-          position: Number(row[positionIdx]),
-          isCustom: row[isCustomIdx] === 1,
-          createdAt: new Date(String(row[createdAtIdx])),
-          updatedAt: new Date(String(row[updatedAtIdx])),
-        })
-      })
-    }
-
-    // Map book settings
     const pageCount = estimatePageCount(chapterContents)
     const bookSettings: BookSettings = {
-      title: bookTitle,
-      author: "Author", // TODO: Get from book or user
-      trimSizeId: isValidTrimSize(bookTrimSize) ? bookTrimSize : undefined,
+      title: bookRow.title,
+      author: bookRow.author,
+      trimSizeId: isValidTrimSize(bookRow.trimSizeId) ? bookRow.trimSizeId : undefined,
       pageCount,
-      bleedSetting: "no-bleed", // TODO: Get from book settings
+      bleedSetting: "no-bleed",
     }
 
-    // Generate PDF
     const document = InteriorDocument({
       book: bookSettings,
       chapters: chapterContents,
       tocEntries: bookTocEntries,
     })
 
-    // Render to stream
     const stream = await renderToStream(document)
 
-    // Return PDF stream
     return new NextResponse(stream as unknown as ReadableStream<Uint8Array>, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${bookTitle.replace(/[^a-z0-9]/gi, "_")}.pdf"`,
+        "Content-Disposition": `attachment; filename="${bookRow.title.replace(/[^a-z0-9]/gi, "_")}.pdf"`,
       },
     })
   } catch (error) {

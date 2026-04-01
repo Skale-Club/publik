@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import {
   Download,
@@ -20,25 +20,47 @@ interface FileDownloadsProps {
 
 interface FileConfig {
   label: string
+  key: string
   description: string
   endpoint: string
   filename: string
   icon: React.ReactNode
 }
 
-/**
- * File download buttons component with validation status indicators
- */
 export function FileDownloads({ bookId, bookTitle }: FileDownloadsProps) {
   const [loadingState, setLoadingState] = useState<Record<string, boolean>>({})
-  const [validationStatus] = useState<Record<string, ValidationStatus>>({
+  const [validationStatus, setValidationStatus] = useState<Record<string, ValidationStatus>>({
     interior: 'pending',
     cover: 'pending'
   })
 
+  const fetchValidation = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/validate?bookId=${encodeURIComponent(bookId)}`)
+      if (!res.ok) return
+      const data = await res.json()
+
+      setValidationStatus({
+        interior: data.interior?.valid
+          ? (data.interior.warnings?.length > 0 ? 'warning' : 'valid')
+          : 'error',
+        cover: data.cover?.valid
+          ? (data.cover.warnings?.length > 0 ? 'warning' : 'valid')
+          : (data.cover?.issues?.length > 0 ? 'error' : 'pending')
+      })
+    } catch {
+      // Leave current status as-is on network error
+    }
+  }, [bookId])
+
+  useEffect(() => {
+    fetchValidation()
+  }, [fetchValidation])
+
   const files: FileConfig[] = [
     {
       label: 'Interior PDF',
+      key: 'interior',
       description: 'The main book content formatted for KDP',
       endpoint: '/api/generate/pdf',
       filename: `${bookTitle || 'book'}-interior.pdf`,
@@ -46,6 +68,7 @@ export function FileDownloads({ bookId, bookTitle }: FileDownloadsProps) {
     },
     {
       label: 'Cover PDF',
+      key: 'cover',
       description: 'The book cover with spine formatted for KDP',
       endpoint: '/api/generate/cover',
       filename: `${bookTitle || 'book'}-cover.pdf`,
@@ -87,7 +110,7 @@ export function FileDownloads({ bookId, bookTitle }: FileDownloadsProps) {
       <div className="grid gap-4 md:grid-cols-2">
         {files.map((file) => {
           const isLoading = loadingState[file.label]
-          const status = validationStatus[file.label.toLowerCase()]
+          const status = validationStatus[file.key]
           
           return (
             <button

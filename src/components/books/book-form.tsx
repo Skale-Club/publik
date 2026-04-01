@@ -1,17 +1,22 @@
 "use client"
 
 import { useRef } from "react"
+import { useRouter } from "next/navigation"
 import { createBook } from "@/app/(dashboard)/books/[bookId]/actions"
 
 export function BookForm() {
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
   
   return (
     <form
       ref={formRef}
       action={async (formData) => {
-        await createBook(formData)
+        const result = await createBook(formData)
         formRef.current?.reset()
+        if (result?.id) {
+          router.push(`/books/${result.id}`)
+        }
       }}
       className="space-y-4"
     >
@@ -27,6 +32,21 @@ export function BookForm() {
           maxLength={200}
           className="w-full px-3 py-2 border rounded-md"
           placeholder="Enter book title"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="author" className="block text-sm font-medium mb-1">
+          Author
+        </label>
+        <input
+          id="author"
+          name="author"
+          type="text"
+          required
+          maxLength={200}
+          className="w-full px-3 py-2 border rounded-md"
+          placeholder="Author name"
         />
       </div>
       

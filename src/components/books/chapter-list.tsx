@@ -34,18 +34,18 @@ export function ChapterList({ chapters, bookId, activeChapterId }: ChapterListPr
   const handleMoveUp = async (index: number) => {
     if (index === 0) return
     const newOrder = [...chapters]
-    const temp = newOrder[index].id
-    newOrder[index].id = newOrder[index - 1].id
-    newOrder[index - 1].id = temp
+    const temp = newOrder[index]
+    newOrder[index] = newOrder[index - 1]
+    newOrder[index - 1] = temp
     await reorderChapters(bookId, newOrder.map(c => c.id))
   }
 
   const handleMoveDown = async (index: number) => {
     if (index === chapters.length - 1) return
     const newOrder = [...chapters]
-    const temp = newOrder[index].id
-    newOrder[index].id = newOrder[index + 1].id
-    newOrder[index + 1].id = temp
+    const temp = newOrder[index]
+    newOrder[index] = newOrder[index + 1]
+    newOrder[index + 1] = temp
     await reorderChapters(bookId, newOrder.map(c => c.id))
   }
 
@@ -110,7 +110,7 @@ export function ChapterList({ chapters, bookId, activeChapterId }: ChapterListPr
                 </button>
               </div>
               <a
-                href={`/dashboard/books/${bookId}/chapters/${chapter.id}`}
+                href={`/books/${bookId}/chapters/${chapter.id}`}
                 className="flex-1 text-sm hover:text-blue-600"
               >
                 {index + 1}. {chapter.title}

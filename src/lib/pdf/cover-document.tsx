@@ -126,6 +126,7 @@ export function CoverDocument({ book, frontCoverUrl, backCoverUrl, backCoverText
   const frontCoverPercent = (dimensions.frontCoverWidth / dimensions.totalWidth) * 100
 
   return (
+    <Document>
     <Page size={[dimensions.totalWidth, dimensions.totalHeight]} style={coverStyles.page}>
       <View style={{ width: `${bleedPercent}%`, height: "100%" }} />
 
@@ -163,6 +164,7 @@ export function CoverDocument({ book, frontCoverUrl, backCoverUrl, backCoverText
 
       <View style={{ width: `${bleedPercent}%`, height: "100%" }} />
     </Page>
+    </Document>
   )
 }
 

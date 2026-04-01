@@ -1,83 +1,60 @@
 import Link from "next/link"
-import { initDb } from "@/infrastructure/db/client"
 import { Book } from "@/domain/book/book"
 import { Chapter } from "@/domain/book/chapter"
 import { deleteBook, createChapter, getChapters } from "./actions"
 import { BookSettingsForm } from "@/components/books/book-settings-form"
 import { ChapterList } from "@/components/books/chapter-list"
+import { db } from "@/infrastructure/db/client"
+import { books } from "@/infrastructure/db/schema/books"
+import { eq, isNull } from "drizzle-orm"
 
 interface PageProps {
   params: Promise<{ bookId: string }>
 }
 
-function getBook(bookId: string): Book | null {
-  const { getDb } = require("@/infrastructure/db/client")
-  const db = getDb()
-  
-  const result = db.exec(`SELECT * FROM books WHERE id = '${bookId}' AND deleted_at IS NULL`)
-  
-  if (result.length === 0 || result[0].values.length === 0) {
-    return null
+async function getBook(bookId: string): Promise<Book | null> {
+  const rows = await db.select().from(books).where(eq(books.id, bookId))
+  const row = rows[0]
+  if (!row || row.deletedAt) return null
+  return {
+    id: row.id,
+    title: row.title,
+    author: row.author,
+    description: row.description,
+    trimSizeId: row.trimSizeId,
+    paperType: row.paperType as Book["paperType"],
+    inkType: row.inkType as Book["inkType"],
+    coverFinish: row.coverFinish as Book["coverFinish"],
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deletedAt: row.deletedAt,
   }
-  
-  const columns = result[0].columns
-  const row = result[0].values[0]
-  const book: any = {}
-  columns.forEach((col: string, i: number) => {
-    book[col] = row[i]
-  })
-  return book as Book
-}
-
-function getChaptersSync(bookId: string): Chapter[] {
-  const { getDb } = require("@/infrastructure/db/client")
-  const db = getDb()
-  
-  const result = db.exec(`SELECT * FROM chapters WHERE book_id = '${bookId}' AND deleted_at IS NULL ORDER BY "order" ASC`)
-  
-  if (result.length === 0 || result[0].values.length === 0) {
-    return []
-  }
-  
-  const columns = result[0].columns
-  return result[0].values.map((row: any[]) => {
-    const chapter: any = {}
-    columns.forEach((col: string, i: number) => {
-      const key = col === "book_id" ? "bookId" : col === "created_at" ? "createdAt" : col === "updated_at" ? "updatedAt" : col === "deleted_at" ? "deletedAt" : col
-      chapter[key] = row[i]
-    })
-    return chapter as Chapter
-  })
 }
 
 export default async function BookDetailPage({ params }: PageProps) {
   const { bookId } = await params
-  await initDb()
-  
-  const book = getBook(bookId)
-  
+
+  const book = await getBook(bookId)
+
   if (!book) {
     return (
       <div className="p-8">
         <p>Book not found</p>
-        <Link href="/dashboard" className="text-blue-600 hover:underline">
+        <Link href="/" className="text-blue-600 hover:underline">
           Back to Dashboard
         </Link>
       </div>
     )
   }
-  
-  const chapters = getChaptersSync(bookId)
-  
+
+  const chapters = await getChapters(bookId)
+
   return (
     <div className="max-w-6xl mx-auto p-8">
-      <Link
-        href="/dashboard"
-        className="text-blue-600 hover:underline mb-4 inline-block"
-      >
-        ← Back to Dashboard
+        <Link href="/" className="text-blue-600 hover:underline">
+          Back to Dashboard
       </Link>
-      
+
       <div className="grid grid-cols-3 gap-8">
         <div className="col-span-2">
           <div className="flex justify-between items-start mb-6">
@@ -99,7 +76,7 @@ export default async function BookDetailPage({ params }: PageProps) {
               </button>
             </form>
           </div>
-          
+
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-3">Content</h2>
             {chapters.length === 0 ? (
@@ -109,7 +86,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                 {chapters.map((chapter) => (
                   <li key={chapter.id}>
                     <Link
-                      href={`/dashboard/books/${bookId}/chapters/${chapter.id}`}
+                      href={`/books/${bookId}/chapters/${chapter.id}`}
                       className="block p-3 border rounded hover:bg-gray-50"
                     >
                       {chapter.title}
@@ -118,7 +95,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                 ))}
               </ul>
             )}
-            
+
             <form action={async () => {
               "use server"
               await createChapter(bookId, "New Chapter")
@@ -131,13 +108,13 @@ export default async function BookDetailPage({ params }: PageProps) {
               </button>
             </form>
           </div>
-          
+
           <div className="border-t pt-6">
             <h2 className="text-lg font-semibold mb-4">Settings</h2>
             <BookSettingsForm book={book} />
           </div>
         </div>
-        
+
         <div>
           <ChapterList chapters={chapters} bookId={bookId} />
         </div>

@@ -1,14 +1,18 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { Book } from "@/domain/book/book"
 import { Chapter } from "@/domain/book/chapter"
-import { createChapter, updateChapterContent } from "../actions"
+import { createChapter, updateChapterContent, getChapters } from "../actions"
 import { TipTapEditor } from "@/components/editor/tiptap-editor"
 import { EditorToolbar } from "@/components/editor/editor-toolbar"
 import { useAutoSave } from "@/components/editor/use-auto-save"
 import { useEditor } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import Image from "@tiptap/extension-image"
+import Underline from "@tiptap/extension-underline"
+import Placeholder from "@tiptap/extension-placeholder"
 import { toast } from "sonner"
 import { Plus, ChevronDown } from "lucide-react"
 
@@ -29,28 +33,25 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
   const selectedChapter = chapters.find((c) => c.id === selectedChapterId)
 
   const editor = useEditor({
-    extensions: [],
+    extensions: [StarterKit, Image, Underline, Placeholder.configure({ placeholder: "Start writing..." })],
     content: selectedChapter?.content || "",
     editable: true,
+    onUpdate: ({ editor: ed }) => {
+      setCurrentContent(ed.getHTML())
+    },
   })
 
-  // Update editor content when chapter changes
-  useMemo(() => {
+  const [currentContent, setCurrentContent] = useState(selectedChapter?.content || "")
+
+  useEffect(() => {
     if (editor && selectedChapter) {
-      const currentContent = editor.getHTML()
       const newContent = selectedChapter.content || ""
-      if (currentContent !== newContent) {
+      if (editor.getHTML() !== newContent) {
         editor.commands.setContent(newContent)
       }
+      setCurrentContent(newContent)
     }
-  }, [selectedChapterId, selectedChapter, editor])
-
-  const handleContentChange = useCallback((newContent: string) => {
-    // This will trigger auto-save via useAutoSave
-    // We need a different approach - let's use onChange directly
-  }, [])
-
-  const [currentContent, setCurrentContent] = useState(selectedChapter?.content || "")
+  }, [selectedChapterId])
 
   const handleSave = useCallback(async (contentToSave: string) => {
     if (!selectedChapterId) return
@@ -63,12 +64,8 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
   })
 
   const handleChapterChange = (chapterId: string) => {
-    const chapter = chapters.find((c) => c.id === chapterId)
-    if (chapter) {
-      setSelectedChapterId(chapterId)
-      setCurrentContent(chapter.content || "")
-      setShowChapterDropdown(false)
-    }
+    setSelectedChapterId(chapterId)
+    setShowChapterDropdown(false)
   }
 
   const handleCreateChapter = async (e: React.FormEvent) => {
@@ -76,7 +73,7 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
     if (!newChapterTitle.trim()) return
 
     const result = await createChapter(book.id, newChapterTitle.trim())
-    const updatedChapters = await getChaptersUpdated(book.id)
+    const updatedChapters = await getChapters(book.id)
     setChapters(updatedChapters)
     setSelectedChapterId(result.id)
     setCurrentContent("")
@@ -94,11 +91,6 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
     }
   }
 
-  const handleEditorChange = (content: string) => {
-    setCurrentContent(content)
-  }
-
-  // No chapters - show create prompt
   if (chapters.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-8">
@@ -108,11 +100,11 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
         >
           ← Back to Book
         </Link>
-        
+
         <div className="text-center py-16">
           <h1 className="text-2xl font-bold mb-4">{book.title}</h1>
           <p className="text-gray-600 mb-8">Create your first chapter to start writing</p>
-          
+
           <form onSubmit={handleCreateChapter} className="max-w-md mx-auto">
             <input
               type="text"
@@ -137,20 +129,18 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Link
-            href={`/dashboard/books/${book.id}`}
+            href={`/books/${book.id}`}
             className="text-blue-600 hover:underline"
           >
             ← Back
           </Link>
           <h1 className="text-xl font-bold">{book.title}</h1>
         </div>
-        
+
         <div className="flex items-center gap-4">
-          {/* Chapter Selector */}
           <div className="relative">
             <button
               onClick={() => setShowChapterDropdown(!showChapterDropdown)}
@@ -159,7 +149,7 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
               <span>{selectedChapter?.title || "Select chapter"}</span>
               <ChevronDown className="w-4 h-4" />
             </button>
-            
+
             {showChapterDropdown && (
               <div className="absolute right-0 mt-1 w-64 border rounded-lg bg-white shadow-lg z-10">
                 <div className="max-h-64 overflow-y-auto">
@@ -178,8 +168,7 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
               </div>
             )}
           </div>
-          
-          {/* Save Status */}
+
           <div className="flex items-center gap-2">
             {status === "error" && (
               <button
@@ -200,20 +189,18 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
         </div>
       </div>
 
-      {/* Editor */}
       {selectedChapter && (
         <div className="border rounded-lg overflow-hidden bg-white">
           <EditorToolbar editor={editor} />
           <TipTapEditor
             editor={editor}
             content={currentContent}
-            onChange={handleEditorChange}
+            onChange={(content) => setCurrentContent(content)}
             placeholder={`Write "${selectedChapter.title}" here...`}
           />
         </div>
       )}
 
-      {/* Add Chapter Button (floating) */}
       {!isCreating && (
         <button
           onClick={() => setIsCreating(true)}
@@ -224,7 +211,6 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
         </button>
       )}
 
-      {/* Create Chapter Form */}
       {isCreating && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <form onSubmit={handleCreateChapter} className="bg-white p-6 rounded-lg w-full max-w-md">
@@ -258,29 +244,4 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
       )}
     </div>
   )
-}
-
-// Helper to get updated chapters
-async function getChaptersUpdated(bookId: string): Promise<Chapter[]> {
-  const { getDb } = await import("@/infrastructure/db/client")
-  const db = getDb()
-  
-  const result = db.exec(`SELECT * FROM chapters WHERE book_id = '${bookId}' AND deleted_at IS NULL ORDER BY "order" ASC`)
-  
-  if (result.length === 0 || result[0].values.length === 0) {
-    return []
-  }
-  
-  const columns = result[0].columns
-  return result[0].values.map((row: unknown[]) => {
-    const chapter: Record<string, unknown> = {}
-    columns.forEach((col: string, i: number) => {
-      const key = col === "book_id" ? "bookId" : 
-                  col === "created_at" ? "createdAt" : 
-                  col === "updated_at" ? "updatedAt" : 
-                  col === "deleted_at" ? "deletedAt" : col
-      chapter[key] = row[i]
-    })
-    return chapter as unknown as Chapter
-  })
 }

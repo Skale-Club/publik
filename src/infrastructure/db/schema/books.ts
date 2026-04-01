@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm"
 export const books = sqliteTable("books", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
+  author: text("author").notNull().default("Author"),
   description: text("description"),
   trimSizeId: text("trim_size_id").notNull().default("6x9"),
   paperType: text("paper_type", { enum: ["white", "cream"] }).notNull().default("white"),

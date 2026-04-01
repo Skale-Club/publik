@@ -12,7 +12,7 @@ export function BookCard({ book }: BookCardProps) {
   
   return (
     <Link
-      href={`/dashboard/books/${book.id}`}
+      href={`/books/${book.id}`}
       className="block p-6 border rounded-lg hover:shadow-md transition-shadow"
     >
       <h3 className="font-semibold text-lg mb-2">{book.title}</h3>

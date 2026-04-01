@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"color\\\\|background\\\\|tailwind\" /c/Users/Vanildo/Dev/publik --include=*.json --include=*.config.ts --include=*.config.js)"
+    ]
+  }
+}

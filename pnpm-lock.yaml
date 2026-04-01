@@ -44,6 +44,9 @@ importers:
       archiver:
         specifier: ^7.0.1
         version: 7.0.1
+      better-sqlite3:
+        specifier: ^12.8.0
+        version: 12.8.0
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -52,7 +55,7 @@ importers:
         version: 4.1.0
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2(@types/better-sqlite3@7.6.13)(better-sqlite3@11.8.1)(sql.js@1.14.1)
+        version: 0.45.2(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)(sql.js@1.14.1)
       lucide-react:
         specifier: ^1.7.0
         version: 1.7.0(react@19.1.0)
@@ -108,6 +111,9 @@ importers:
       '@types/archiver':
         specifier: ^7.0.0
         version: 7.0.0
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
       '@types/node':
         specifier: ^20
         version: 20.19.37
@@ -1992,8 +1998,9 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  better-sqlite3@11.8.1:
-    resolution: {integrity: sha512-9BxNaBkblMjhJW8sMRZxnxVTRgbRmssZW0Oxc1MPBTfiR+WW21e2Mk4qu8CzrcZb1LwPCnFsfDEzq+SNcBU8eg==}
+  better-sqlite3@12.8.0:
+    resolution: {integrity: sha512-RxD2Vd96sQDjQr20kdP+F+dK/1OUNiVOl200vKBZY8u0vTwysfolF6Hq+3ZK2+h8My9YvZhHsF+RSGZW2VYrPQ==}
+    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x}
 
   bidi-js@1.0.3:
     resolution: {integrity: sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==}
@@ -5175,7 +5182,6 @@ snapshots:
   '@types/better-sqlite3@7.6.13':
     dependencies:
       '@types/node': 20.19.37
-    optional: true
 
   '@types/chai@5.2.3':
     dependencies:
@@ -5607,11 +5613,10 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  better-sqlite3@11.8.1:
+  better-sqlite3@12.8.0:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
-    optional: true
 
   bidi-js@1.0.3:
     dependencies:
@@ -5620,14 +5625,12 @@ snapshots:
   bindings@1.5.0:
     dependencies:
       file-uri-to-path: 1.0.0
-    optional: true
 
   bl@4.1.0:
     dependencies:
       buffer: 5.7.1
       inherits: 2.0.4
       readable-stream: 3.6.2
-    optional: true
 
   bluebird@3.4.7: {}
 
@@ -5664,7 +5667,6 @@ snapshots:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-    optional: true
 
   buffer@6.0.3:
     dependencies:
@@ -5699,8 +5701,7 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  chownr@1.1.4:
-    optional: true
+  chownr@1.1.4: {}
 
   client-only@0.0.1: {}
 
@@ -5801,10 +5802,8 @@ snapshots:
   decompress-response@6.0.0:
     dependencies:
       mimic-response: 3.1.0
-    optional: true
 
-  deep-extend@0.6.0:
-    optional: true
+  deep-extend@0.6.0: {}
 
   deep-is@0.1.4: {}
 
@@ -5843,10 +5842,10 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.21.0
 
-  drizzle-orm@0.45.2(@types/better-sqlite3@7.6.13)(better-sqlite3@11.8.1)(sql.js@1.14.1):
+  drizzle-orm@0.45.2(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)(sql.js@1.14.1):
     optionalDependencies:
       '@types/better-sqlite3': 7.6.13
-      better-sqlite3: 11.8.1
+      better-sqlite3: 12.8.0
       sql.js: 1.14.1
 
   duck@0.1.12:
@@ -5870,7 +5869,6 @@ snapshots:
   end-of-stream@1.4.5:
     dependencies:
       once: 1.4.0
-    optional: true
 
   enhanced-resolve@5.20.1:
     dependencies:
@@ -6282,8 +6280,7 @@ snapshots:
 
   events@3.3.0: {}
 
-  expand-template@2.0.3:
-    optional: true
+  expand-template@2.0.3: {}
 
   expect-type@1.3.0: {}
 
@@ -6317,8 +6314,7 @@ snapshots:
     dependencies:
       flat-cache: 4.0.1
 
-  file-uri-to-path@1.0.0:
-    optional: true
+  file-uri-to-path@1.0.0: {}
 
   fill-range@7.1.1:
     dependencies:
@@ -6357,8 +6353,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fs-constants@1.0.0:
-    optional: true
+  fs-constants@1.0.0: {}
 
   fsevents@2.3.3:
     optional: true
@@ -6406,8 +6401,7 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  github-from-package@0.0.0:
-    optional: true
+  github-from-package@0.0.0: {}
 
   glob-parent@5.1.2:
     dependencies:
@@ -6492,8 +6486,7 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  ini@1.3.8:
-    optional: true
+  ini@1.3.8: {}
 
   internal-slot@1.1.0:
     dependencies:
@@ -6858,8 +6851,7 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.2
 
-  mimic-response@3.1.0:
-    optional: true
+  mimic-response@3.1.0: {}
 
   min-indent@1.0.1: {}
 
@@ -6883,8 +6875,7 @@ snapshots:
 
   minipass@7.1.3: {}
 
-  mkdirp-classic@0.5.3:
-    optional: true
+  mkdirp-classic@0.5.3: {}
 
   ms@2.1.3: {}
 
@@ -6892,8 +6883,7 @@ snapshots:
 
   nanoid@5.1.7: {}
 
-  napi-build-utils@2.0.0:
-    optional: true
+  napi-build-utils@2.0.0: {}
 
   napi-postinstall@0.3.4: {}
 
@@ -6925,7 +6915,6 @@ snapshots:
   node-abi@3.89.0:
     dependencies:
       semver: 7.7.4
-    optional: true
 
   node-exports-info@1.6.0:
     dependencies:
@@ -6990,7 +6979,6 @@ snapshots:
   once@1.4.0:
     dependencies:
       wrappy: 1.0.2
-    optional: true
 
   option@0.2.4: {}
 
@@ -7091,7 +7079,6 @@ snapshots:
       simple-get: 4.0.1
       tar-fs: 2.1.4
       tunnel-agent: 0.6.0
-    optional: true
 
   prelude-ls@1.2.1: {}
 
@@ -7218,7 +7205,6 @@ snapshots:
     dependencies:
       end-of-stream: 1.4.5
       once: 1.4.0
-    optional: true
 
   punycode.js@2.3.1: {}
 
@@ -7236,7 +7222,6 @@ snapshots:
       ini: 1.3.8
       minimist: 1.2.8
       strip-json-comments: 2.0.1
-    optional: true
 
   react-dom@19.1.0(react@19.1.0):
     dependencies:
@@ -7264,7 +7249,6 @@ snapshots:
       inherits: 2.0.4
       string_decoder: 1.3.0
       util-deprecate: 1.0.2
-    optional: true
 
   readable-stream@4.7.0:
     dependencies:
@@ -7489,15 +7473,13 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-concat@1.0.1:
-    optional: true
+  simple-concat@1.0.1: {}
 
   simple-get@4.0.1:
     dependencies:
       decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
-    optional: true
 
   simple-swizzle@0.2.4:
     dependencies:
@@ -7627,8 +7609,7 @@ snapshots:
     dependencies:
       min-indent: 1.0.1
 
-  strip-json-comments@2.0.1:
-    optional: true
+  strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
 
@@ -7659,7 +7640,6 @@ snapshots:
       mkdirp-classic: 0.5.3
       pump: 3.0.4
       tar-stream: 2.2.0
-    optional: true
 
   tar-stream@2.2.0:
     dependencies:
@@ -7668,7 +7648,6 @@ snapshots:
       fs-constants: 1.0.0
       inherits: 2.0.4
       readable-stream: 3.6.2
-    optional: true
 
   tar-stream@3.1.8:
     dependencies:
@@ -7748,7 +7727,6 @@ snapshots:
   tunnel-agent@0.6.0:
     dependencies:
       safe-buffer: 5.2.1
-    optional: true
 
   type-check@0.4.0:
     dependencies:
@@ -7983,8 +7961,7 @@ snapshots:
       string-width: 5.1.2
       strip-ansi: 7.2.0
 
-  wrappy@1.0.2:
-    optional: true
+  wrappy@1.0.2: {}
 
   xml-name-validator@5.0.0: {}
 

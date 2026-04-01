@@ -1,10 +1,7 @@
-/**
- * TOC synchronization utilities
- * Keeps stored TOC entries in sync with editor headings
- */
-
 import type { TOCEntry, Anchor } from "@/types/toc"
-import { getDb, saveDb } from "@/infrastructure/db/client"
+import { db } from "@/infrastructure/db/client"
+import { tocEntries } from "@/infrastructure/db/schema/toc"
+import { eq, isNull, asc, sql, and } from "drizzle-orm"
 import { nanoid } from "nanoid"
 
 export interface TOCEntryRow {
@@ -19,274 +16,166 @@ export interface TOCEntryRow {
   updatedAt: string
 }
 
-/**
- * Fetch all TOC entries for a book ordered by position
- */
-export function getTOCEntriesForBook(bookId: string): TOCEntryRow[] {
-  const db = getDb()
-  
-  const result = db.exec(
-    `SELECT * FROM toc_entries WHERE book_id = '${bookId}' AND deleted_at IS NULL ORDER BY position ASC`
-  )
-  
-  if (result.length === 0 || result[0].values.length === 0) {
-    return []
+function mapRow(row: typeof tocEntries.$inferSelect): TOCEntryRow {
+  return {
+    id: row.id,
+    bookId: row.bookId,
+    title: row.title,
+    level: row.level,
+    anchorId: row.anchorId,
+    position: row.position,
+    isCustom: row.isCustom,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   }
-  
-  const columns = result[0].columns
-  return result[0].values.map((row) => {
-    const entry: any = {}
-    columns.forEach((col, i) => {
-      // Map snake_case columns to camelCase
-      switch (col) {
-        case "book_id":
-          entry.bookId = row[i]
-          break
-        case "anchor_id":
-          entry.anchorId = row[i]
-          break
-        case "is_custom":
-          entry.isCustom = row[i] === 1
-          break
-        case "created_at":
-          entry.createdAt = row[i]
-          break
-        case "updated_at":
-          entry.updatedAt = row[i]
-          break
-        default:
-          entry[col] = row[i]
-      }
-    })
-    return entry as TOCEntryRow
-  })
 }
 
-/**
- * Check if a TOC entry is custom
- * An entry is custom if isCustom flag is true OR title differs from anchor text
- */
+export function getTOCEntriesForBook(bookId: string): TOCEntryRow[] {
+  const rows = db
+    .select()
+    .from(tocEntries)
+    .where(and(eq(tocEntries.bookId, bookId), isNull(tocEntries.deletedAt)))
+    .orderBy(asc(tocEntries.position))
+    .all()
+
+  return rows.map(mapRow)
+}
+
 export function isCustomEntry(
   entry: TOCEntryRow,
   anchor?: Anchor
 ): boolean {
-  if (entry.isCustom) {
-    return true
-  }
-  // If entry has an anchor but title differs from anchor text, consider it custom
-  if (anchor && entry.anchorId === anchor.id && entry.title !== anchor.textContent) {
-    return true
-  }
+  if (entry.isCustom) return true
+  if (anchor && entry.anchorId === anchor.id && entry.title !== anchor.textContent) return true
   return false
 }
 
-/**
- * Sync TOC entries with headings from the editor
- * - New headings: create new TOC entries
- * - Removed headings: mark as removed (keep for undo capability)
- * - Changed headings: preserve custom title, update anchor reference
- */
 export function syncTOCWithHeadings(
   bookId: string,
   anchors: Anchor[]
 ): { added: number; updated: number; preserved: number } {
-  const db = getDb()
-  const now = new Date().toISOString()
-  
-  // Get existing entries
-  const existingEntries = getTOCEntriesForBook(bookId)
-  
-  // Create maps for quick lookup
+  const existing = getTOCEntriesForBook(bookId)
   const anchorMap = new Map(anchors.map((a) => [a.id, a]))
   const entryAnchorMap = new Map(
-    existingEntries
-      .filter((e) => e.anchorId)
-      .map((e) => [e.anchorId!, e])
+    existing.filter((e) => e.anchorId).map((e) => [e.anchorId!, e])
   )
-  
+
   let added = 0
   let updated = 0
   let preserved = 0
-  
-  // First, update existing entries that still have matching anchors
-  existingEntries.forEach((entry) => {
+  const now = new Date().toISOString()
+
+  for (const entry of existing) {
     if (entry.anchorId && anchorMap.has(entry.anchorId)) {
-      // Entry still has a matching anchor - just update position if needed
-      const anchor = anchorMap.get(entry.anchorId)!
       const newPosition = anchors.findIndex((a) => a.id === entry.anchorId)
-      
       if (entry.position !== newPosition) {
-        db.run(
-          `UPDATE toc_entries SET position = ?, updated_at = ? WHERE id = ?`,
-          [newPosition, now, entry.id]
-        )
+        db.update(tocEntries)
+          .set({ position: newPosition, updatedAt: now })
+          .where(eq(tocEntries.id, entry.id))
+          .run()
         updated++
       } else {
         preserved++
       }
     }
-  })
-  
-  // Second, add new entries for anchors that don't have corresponding entries
-  anchors.forEach((anchor, index) => {
+  }
+
+  for (let index = 0; index < anchors.length; index++) {
+    const anchor = anchors[index]
     if (!entryAnchorMap.has(anchor.id)) {
-      // New anchor - create entry
       const id = nanoid()
-      db.run(
-        `INSERT INTO toc_entries (id, book_id, title, level, anchor_id, position, is_custom, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, bookId, anchor.textContent, anchor.level, anchor.id, index, 0, now, now]
-      )
+      db.insert(tocEntries).values({
+        id,
+        bookId,
+        title: anchor.textContent,
+        level: anchor.level,
+        anchorId: anchor.id,
+        position: index,
+        isCustom: false,
+        createdAt: now,
+        updatedAt: now,
+      }).run()
       added++
     }
-  })
-  
-  saveDb()
-  
+  }
+
   return { added, updated, preserved }
 }
 
-/**
- * Debounce utility for TOC sync
- * Prevents excessive DB writes during rapid editor changes
- */
 export function debounceSync<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
-  
+
   return (...args: Parameters<T>) => {
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-    timeout = setTimeout(() => {
-      func(...args)
-    }, wait)
+    if (timeout) clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
   }
 }
 
-/**
- * Get TOC entry by ID
- */
 export function getTOCEntryById(id: string): TOCEntryRow | null {
-  const db = getDb()
-  
-  const result = db.exec(`SELECT * FROM toc_entries WHERE id = '${id}' AND deleted_at IS NULL`)
-  
-  if (result.length === 0 || result[0].values.length === 0) {
-    return null
-  }
-  
-  const columns = result[0].columns
-  const row = result[0].values[0]
-  const entry: any = {}
-  columns.forEach((col, i) => {
-    switch (col) {
-      case "book_id":
-        entry.bookId = row[i]
-        break
-      case "anchor_id":
-        entry.anchorId = row[i]
-        break
-      case "is_custom":
-        entry.isCustom = row[i] === 1
-        break
-      case "created_at":
-        entry.createdAt = row[i]
-        break
-      case "updated_at":
-        entry.updatedAt = row[i]
-        break
-      default:
-        entry[col] = row[i]
-    }
-  })
-  
-  return entry as TOCEntryRow
+  const rows = db.select().from(tocEntries).where(eq(tocEntries.id, id)).all()
+  const row = rows[0]
+  if (!row || row.deletedAt) return null
+  return mapRow(row)
 }
 
-/**
- * Update TOC entry title
- */
-export function updateTOCEntryTitle(
-  id: string,
-  title: string
-): TOCEntryRow | null {
-  const db = getDb()
+export function updateTOCEntryTitle(id: string, title: string): TOCEntryRow | null {
   const now = new Date().toISOString()
-  
-  db.run(
-    `UPDATE toc_entries SET title = ?, is_custom = 1, updated_at = ? WHERE id = ?`,
-    [title, now, id]
-  )
-  saveDb()
-  
+  db.update(tocEntries)
+    .set({ title, isCustom: true, updatedAt: now })
+    .where(eq(tocEntries.id, id))
+    .run()
   return getTOCEntryById(id)
 }
 
-/**
- * Reorder TOC entries based on new position array
- */
-export function reorderTOCEntries(
-  bookId: string,
-  entryIds: string[]
-): void {
-  const db = getDb()
+export function reorderTOCEntries(bookId: string, entryIds: string[]): void {
   const now = new Date().toISOString()
-  
-  entryIds.forEach((id, index) => {
-    db.run(
-      `UPDATE toc_entries SET position = ?, updated_at = ? WHERE id = ?`,
-      [index, now, id]
-    )
-  })
-  
-  saveDb()
+  for (let i = 0; i < entryIds.length; i++) {
+    db.update(tocEntries)
+      .set({ position: i, updatedAt: now })
+      .where(eq(tocEntries.id, entryIds[i]))
+      .run()
+  }
 }
 
-/**
- * Add a custom TOC entry
- */
 export function addCustomTOCEntry(
   bookId: string,
   data: { title: string; level: number; position?: number }
 ): TOCEntryRow {
-  const db = getDb()
-  const id = nanoid()
-  const now = new Date().toISOString()
-  
-  // Get the next position if not provided
   let position = data.position
   if (position === undefined) {
-    const result = db.exec(
-      `SELECT MAX(position) as maxPos FROM toc_entries WHERE book_id = '${bookId}' AND deleted_at IS NULL`
-    )
-    const maxPos = result[0]?.values[0]?.[0] as number | null
-    position = (maxPos ?? -1) + 1
+    const maxResult = db
+      .select({ value: sql<number>`coalesce(max(${tocEntries.position}), -1)` })
+      .from(tocEntries)
+      .where(and(eq(tocEntries.bookId, bookId), isNull(tocEntries.deletedAt)))
+      .all()
+    position = (maxResult[0]?.value ?? -1) + 1
   }
-  
-  db.run(
-    `INSERT INTO toc_entries (id, book_id, title, level, anchor_id, position, is_custom, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, bookId, data.title, data.level, null, position, 1, now, now]
-  )
-  saveDb()
-  
+
+  const id = nanoid()
+  const now = new Date().toISOString()
+
+  db.insert(tocEntries).values({
+    id,
+    bookId,
+    title: data.title,
+    level: data.level,
+    anchorId: null,
+    position,
+    isCustom: true,
+    createdAt: now,
+    updatedAt: now,
+  }).run()
+
   return getTOCEntryById(id)!
 }
 
-/**
- * Remove a TOC entry
- */
 export function removeTOCEntry(id: string): void {
-  const db = getDb()
   const now = new Date().toISOString()
-  
-  // Soft delete - mark as removed
-  db.run(
-    `UPDATE toc_entries SET updated_at = ?, deleted_at = ? WHERE id = ?`,
-    [now, now, id]
-  )
-  saveDb()
+  db.update(tocEntries)
+    .set({ updatedAt: now, deletedAt: now })
+    .where(eq(tocEntries.id, id))
+    .run()
 }
