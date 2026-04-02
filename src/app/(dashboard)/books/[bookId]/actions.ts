@@ -150,9 +150,13 @@ export async function getChapters(bookId: string): Promise<Chapter[]> {
 
 export async function reorderChapters(bookId: string, chapterIds: string[]): Promise<void> {
   const now = new Date().toISOString()
-  for (let i = 0; i < chapterIds.length; i++) {
-    await db.update(chapters).set({ order: i, updatedAt: now }).where(eq(chapters.id, chapterIds[i]))
-  }
+  await db.transaction(async (tx) => {
+    await Promise.all(
+      chapterIds.map((id, i) =>
+        tx.update(chapters).set({ order: i, updatedAt: now }).where(eq(chapters.id, id))
+      )
+    )
+  })
 
   revalidatePath(`/books/${bookId}`)
 }

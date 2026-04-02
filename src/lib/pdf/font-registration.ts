@@ -5,26 +5,21 @@
 
 import { Font } from "@react-pdf/renderer"
 
-// Font sources - using CDN for bundled fonts
-// For production, download and place TTF files in /public/fonts/
+// Font sources — local TTF files in /public/fonts/ (no CDN dependency)
+const FONT_BASE = "/fonts"
 const FONT_SOURCES = {
-  // Times Roman family
-  "Times-Roman": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-Roman.ttf",
-  "Times-Italic": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-Italic.ttf",
-  "Times-Bold": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-Bold.ttf",
-  "Times-BoldItalic": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-BoldItalic.ttf",
-
-  // Helvetica family
-  Helvetica: "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Helvetica.ttf",
-  "Helvetica-Oblique": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Helvetica-Oblique.ttf",
-  "Helvetica-Bold": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Helvetica-Bold.ttf",
-  "Helvetica-BoldOblique": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Helvetica-BoldOblique.ttf",
-
-  // Courier family (for code blocks)
-  Courier: "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Courier.ttf",
-  "Courier-Oblique": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Courier-Oblique.ttf",
-  "Courier-Bold": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Courier-Bold.ttf",
-  "Courier-BoldOblique": "https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Courier-BoldOblique.ttf",
+  "Times-Roman": `${FONT_BASE}/Times-Roman.ttf`,
+  "Times-Italic": `${FONT_BASE}/Times-Italic.ttf`,
+  "Times-Bold": `${FONT_BASE}/Times-Bold.ttf`,
+  "Times-BoldItalic": `${FONT_BASE}/Times-BoldItalic.ttf`,
+  Helvetica: `${FONT_BASE}/Helvetica.ttf`,
+  "Helvetica-Oblique": `${FONT_BASE}/Helvetica-Oblique.ttf`,
+  "Helvetica-Bold": `${FONT_BASE}/Helvetica-Bold.ttf`,
+  "Helvetica-BoldOblique": `${FONT_BASE}/Helvetica-BoldOblique.ttf`,
+  Courier: `${FONT_BASE}/Courier.ttf`,
+  "Courier-Oblique": `${FONT_BASE}/Courier-Oblique.ttf`,
+  "Courier-Bold": `${FONT_BASE}/Courier-Bold.ttf`,
+  "Courier-BoldOblique": `${FONT_BASE}/Courier-BoldOblique.ttf`,
 }
 
 // Track registration status

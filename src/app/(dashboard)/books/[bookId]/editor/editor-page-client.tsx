@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Book } from "@/domain/book/book"
 import { Chapter } from "@/domain/book/chapter"
@@ -44,23 +44,27 @@ export function EditorPageClient({ book, chapters: initialChapters }: EditorPage
   const [currentContent, setCurrentContent] = useState(selectedChapter?.content || "")
 
   useEffect(() => {
-    if (editor && selectedChapter) {
-      const newContent = selectedChapter.content || ""
-      if (editor.getHTML() !== newContent) {
-        editor.commands.setContent(newContent)
-      }
-      setCurrentContent(newContent)
-    }
+    if (!editor || !selectedChapter) return
+    const newContent = selectedChapter.content || ""
+    editor.commands.setContent(newContent)
+    setCurrentContent(newContent)
+  }, [selectedChapterId, editor])
+
+  const selectedChapterIdRef = useRef(selectedChapterId)
+  useEffect(() => {
+    selectedChapterIdRef.current = selectedChapterId
   }, [selectedChapterId])
 
   const handleSave = useCallback(async (contentToSave: string) => {
-    if (!selectedChapterId) return
-    await updateChapterContent(selectedChapterId, contentToSave)
-  }, [selectedChapterId])
+    const chapterId = selectedChapterIdRef.current
+    if (!chapterId) return
+    await updateChapterContent(chapterId, contentToSave)
+  }, [])
 
   const { status, retry } = useAutoSave({
     content: currentContent,
     onSave: handleSave,
+    resetKey: selectedChapterId ?? undefined,
   })
 
   const handleChapterChange = (chapterId: string) => {

@@ -44,5 +44,6 @@ next-env.d.ts
 publik.db
 publik.db-journal
 publik.db-wal
+publik.db-shm
 
 .vercel

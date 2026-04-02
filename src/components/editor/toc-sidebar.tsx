@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   DndContext,
   closestCenter,
@@ -30,11 +30,10 @@ import {
 
 interface TOCSidebarProps {
   bookId: string
-  editor: any // TipTap editor instance
   anchors: Anchor[]
 }
 
-export function TOCSidebar({ bookId, editor, anchors }: TOCSidebarProps) {
+export function TOCSidebar({ bookId, anchors }: TOCSidebarProps) {
   const [entries, setEntries] = useState<TOCEntryType[]>([])
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
@@ -55,10 +54,17 @@ export function TOCSidebar({ bookId, editor, anchors }: TOCSidebarProps) {
     loadEntries()
   }, [bookId])
 
-  // Sync with editor anchors when they change
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Sync with editor anchors when they change — debounced to avoid write storms
   useEffect(() => {
-    if (anchors.length > 0 && !isLoading) {
+    if (anchors.length === 0 || isLoading) return
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+    syncTimeoutRef.current = setTimeout(() => {
       handleSync()
+    }, 1500)
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
     }
   }, [anchors])
 

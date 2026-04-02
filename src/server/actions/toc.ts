@@ -117,12 +117,13 @@ export async function reorderTOCEntriesAction(
     const validated = reorderTOCEntriesSchema.parse({ bookId, entryIds })
     const now = new Date().toISOString()
 
-    for (let i = 0; i < validated.entryIds.length; i++) {
-      await db
-        .update(tocEntries)
-        .set({ position: i, updatedAt: now })
-        .where(eq(tocEntries.id, validated.entryIds[i]))
-    }
+    await db.transaction(async (tx) => {
+      await Promise.all(
+        validated.entryIds.map((id, i) =>
+          tx.update(tocEntries).set({ position: i, updatedAt: now }).where(eq(tocEntries.id, id))
+        )
+      )
+    })
 
     revalidatePath(`/books/${validated.bookId}`)
     return { success: true }
@@ -226,39 +227,49 @@ export async function syncTOC(
     let preserved = 0
     const now = new Date().toISOString()
 
-    for (const entry of existing) {
-      if (entry.anchorId && anchorMap.has(entry.anchorId)) {
-        const newPosition = validated.anchors.findIndex((a) => a.id === entry.anchorId)
-        if (entry.position !== newPosition) {
-          await db
-            .update(tocEntries)
-            .set({ position: newPosition, updatedAt: now })
-            .where(eq(tocEntries.id, entry.id))
-          updated++
-        } else {
-          preserved++
+    await db.transaction(async (tx) => {
+      const updateOps: Promise<unknown>[] = []
+
+      for (const entry of existing) {
+        if (entry.anchorId && anchorMap.has(entry.anchorId)) {
+          const newPosition = validated.anchors.findIndex((a) => a.id === entry.anchorId)
+          if (entry.position !== newPosition) {
+            updateOps.push(
+              tx.update(tocEntries)
+                .set({ position: newPosition, updatedAt: now })
+                .where(eq(tocEntries.id, entry.id))
+            )
+            updated++
+          } else {
+            preserved++
+          }
         }
       }
-    }
 
-    for (let index = 0; index < validated.anchors.length; index++) {
-      const anchor = validated.anchors[index]
-      if (!entryAnchorMap.has(anchor.id)) {
-        const id = nanoid()
-        await db.insert(tocEntries).values({
-          id,
-          bookId: validated.bookId,
-          title: anchor.textContent,
-          level: anchor.level,
-          anchorId: anchor.id,
-          position: index,
-          isCustom: 0,
-          createdAt: now,
-          updatedAt: now,
-        })
-        added++
+      const insertOps: Promise<unknown>[] = []
+      for (let index = 0; index < validated.anchors.length; index++) {
+        const anchor = validated.anchors[index]
+        if (!entryAnchorMap.has(anchor.id)) {
+          const id = nanoid()
+          insertOps.push(
+            tx.insert(tocEntries).values({
+              id,
+              bookId: validated.bookId,
+              title: anchor.textContent,
+              level: anchor.level,
+              anchorId: anchor.id,
+              position: index,
+              isCustom: 0,
+              createdAt: now,
+              updatedAt: now,
+            })
+          )
+          added++
+        }
       }
-    }
+
+      await Promise.all([...updateOps, ...insertOps])
+    })
 
     revalidatePath(`/books/${validated.bookId}`)
     return { success: true, result: { added, updated, preserved } }

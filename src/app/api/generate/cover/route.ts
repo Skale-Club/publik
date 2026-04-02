@@ -6,7 +6,8 @@ import { chapters as chaptersTable } from "@/infrastructure/db/schema/chapters"
 import { covers as coversTable } from "@/infrastructure/db/schema/covers"
 import { CoverDocument, type CoverBookData } from "@/lib/pdf/cover-document"
 import { isValidTrimSize } from "@/lib/pdf/page-layout"
-import { eq, and, isNull, sql } from "drizzle-orm"
+import { estimatePageCount } from "@/lib/pdf/page-count"
+import { eq, and, isNull } from "drizzle-orm"
 
 export const maxDuration = 300
 
@@ -40,13 +41,7 @@ export async function GET(request: NextRequest) {
       .from(chaptersTable)
       .where(and(eq(chaptersTable.bookId, bookId), isNull(chaptersTable.deletedAt)))
 
-    let totalWords = 0
-    for (const row of chapterRows) {
-      if (row.content) {
-        totalWords += row.content.split(/\s+/).filter(Boolean).length
-      }
-    }
-    const pageCount = Math.max(24, Math.ceil(totalWords / 300))
+    const pageCount = estimatePageCount(chapterRows.map((r) => r.content ?? ""))
 
     const inkType = bookRow.inkType
     let paperType: "white" | "cream" | "premium-color" | "standard-color" = "white"

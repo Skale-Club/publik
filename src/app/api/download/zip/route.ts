@@ -4,6 +4,8 @@ import { db } from '@/infrastructure/db/client'
 import { books } from '@/infrastructure/db/schema/books'
 import { chapters as chaptersTable } from '@/infrastructure/db/schema/chapters'
 import { generateChecklist, type BookData } from '@/lib/export/checklist'
+import { generateInteriorPDF } from '@/lib/pdf/generate-interior'
+import { generateCoverPDF } from '@/lib/pdf/generate-cover'
 import { eq, isNull, and, sql } from 'drizzle-orm'
 
 export const maxDuration = 300
@@ -48,25 +50,16 @@ export async function POST(request: NextRequest) {
 
     const checklistContent = generateChecklist(bookData)
 
-    const pdfResponse = await fetch(
-      `${request.nextUrl.origin}/api/generate/pdf?bookId=${bookId}`
-    )
+    // Generate PDFs directly without internal HTTP round-trips
+    const [interiorResult, coverResult] = await Promise.allSettled([
+      generateInteriorPDF(bookId),
+      generateCoverPDF(bookId),
+    ])
 
-    let interiorPdfBuffer: Buffer | null = null
-    if (pdfResponse.ok) {
-      const pdfArrayBuffer = await pdfResponse.arrayBuffer()
-      interiorPdfBuffer = Buffer.from(pdfArrayBuffer)
-    }
-
-    const coverResponse = await fetch(
-      `${request.nextUrl.origin}/api/generate/cover?bookId=${bookId}`
-    )
-
-    let coverPdfBuffer: Buffer | null = null
-    if (coverResponse.ok) {
-      const coverArrayBuffer = await coverResponse.arrayBuffer()
-      coverPdfBuffer = Buffer.from(coverArrayBuffer)
-    }
+    const interiorPdfBuffer =
+      interiorResult.status === 'fulfilled' ? interiorResult.value : null
+    const coverPdfBuffer =
+      coverResult.status === 'fulfilled' ? coverResult.value : null
 
     const archive = archiver('zip', { zlib: { level: 9 } })
     const chunks: Uint8Array[] = []
@@ -100,7 +93,11 @@ export async function POST(request: NextRequest) {
       if (interiorPdfBuffer) {
         archive.append(interiorPdfBuffer, { name: 'interior.pdf' })
       } else {
-        archive.append('Interior PDF not available. Please generate it first.', {
+        const reason =
+          interiorResult.status === 'rejected'
+            ? String(interiorResult.reason)
+            : 'Unknown error'
+        archive.append(`Interior PDF could not be generated: ${reason}`, {
           name: 'interior-ERROR.txt',
         })
       }
@@ -108,7 +105,11 @@ export async function POST(request: NextRequest) {
       if (coverPdfBuffer) {
         archive.append(coverPdfBuffer, { name: 'cover.pdf' })
       } else {
-        archive.append('Cover PDF not available. Please generate it first.', {
+        const reason =
+          coverResult.status === 'rejected'
+            ? String(coverResult.reason)
+            : 'Unknown error'
+        archive.append(`Cover PDF could not be generated: ${reason}`, {
           name: 'cover-ERROR.txt',
         })
       }

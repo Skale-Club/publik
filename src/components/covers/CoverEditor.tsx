@@ -7,6 +7,7 @@ import { CoverValidationStatus } from "./CoverValidationStatus"
 import { getCover, saveFrontCover, getBook, type CoverData, type BookData } from "@/server/actions/covers"
 import { getChapters } from "@/app/(dashboard)/books/[bookId]/actions"
 import { validateCoverForKDP, type CoverValidationResult } from "@/lib/covers"
+import { estimatePageCount } from "@/lib/pdf/page-count"
 
 interface CoverEditorProps {
   bookId: string
@@ -32,17 +33,8 @@ export function CoverEditor({ bookId }: CoverEditorProps) {
         const cover = await getCover(bookId)
         setCoverData(cover)
 
-        // Calculate page count from chapters
         const chapters = await getChapters(bookId)
-        // Estimate: each chapter is ~1-3 pages, default to 1 page if no content
-        const estimatedPages = chapters.reduce((total, ch) => {
-          // Rough estimate: ~2000 characters = 1 page
-          const contentLength = ch.content ? ch.content.length : 0
-          const chapterPages = Math.max(1, Math.ceil(contentLength / 2000))
-          return total + chapterPages
-        }, 0)
-        // Add front matter pages (title, copyright, toc) - typically 3-5 pages
-        setPageCount(Math.max(estimatedPages + 4, 24)) // Minimum 24 pages for KDP
+        setPageCount(estimatePageCount(chapters.map((c) => c.content ?? "")))
       } catch (err) {
         console.error("Failed to load data:", err)
         setError("Failed to load book data")

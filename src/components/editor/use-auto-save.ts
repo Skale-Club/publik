@@ -8,13 +8,38 @@ interface UseAutoSaveOptions {
   content: string
   onSave: (content: string) => Promise<void>
   delay?: number
+  /** When this value changes, any pending save is cancelled and baseline is reset.
+   *  Use the chapter ID so switching chapters never writes old content to the new one. */
+  resetKey?: string
 }
 
-export function useAutoSave({ content, onSave, delay = 800 }: UseAutoSaveOptions) {
+export function useAutoSave({
+  content,
+  onSave,
+  delay = 800,
+  resetKey,
+}: UseAutoSaveOptions) {
   const [status, setStatus] = useState<SaveStatus>("idle")
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSavedRef = useRef<string>(content)
-  const savePromiseRef = useRef<Promise<void> | null>(null)
+  const onSaveRef = useRef(onSave)
+
+  // Keep onSave ref current so the timeout closure always calls the latest version.
+  useEffect(() => {
+    onSaveRef.current = onSave
+  }, [onSave])
+
+  // When the chapter changes: cancel any pending save and reset the baseline so
+  // the auto-save effect doesn't immediately try to save the new chapter's content.
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    lastSavedRef.current = content
+    setStatus("idle")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey])
 
   useEffect(() => {
     if (content === lastSavedRef.current) {
@@ -28,14 +53,14 @@ export function useAutoSave({ content, onSave, delay = 800 }: UseAutoSaveOptions
     }
 
     timeoutRef.current = setTimeout(async () => {
+      const contentToSave = content
       setStatus("saving")
       try {
-        await onSave(content)
-        lastSavedRef.current = content
+        await onSaveRef.current(contentToSave)
+        lastSavedRef.current = contentToSave
         setStatus("saved")
         setTimeout(() => setStatus("idle"), 2000)
-      } catch (error) {
-        console.error("Auto-save failed:", error)
+      } catch {
         setStatus("error")
       }
     }, delay)
@@ -45,17 +70,17 @@ export function useAutoSave({ content, onSave, delay = 800 }: UseAutoSaveOptions
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [content, onSave, delay])
+  }, [content, delay])
 
   const retry = async () => {
     if (content !== lastSavedRef.current) {
       setStatus("saving")
       try {
-        await onSave(content)
+        await onSaveRef.current(content)
         lastSavedRef.current = content
         setStatus("saved")
         setTimeout(() => setStatus("idle"), 2000)
-      } catch (error) {
+      } catch {
         setStatus("error")
       }
     }

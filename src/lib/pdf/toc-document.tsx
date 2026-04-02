@@ -110,7 +110,6 @@ export function TOCDocument({ book, chapters, tocEntries }: TOCDocumentProps) {
               ...documentStyles.chapterTitle,
               marginLeft: (chapter.level - 1) * 15,
             }}
-            // @ts-expect-error - bookmark prop exists at runtime
             bookmark={{
               title: chapter.title,
               fit: true,
@@ -169,7 +168,6 @@ export function TOCDocumentWithPageNumbers(props: TOCDocumentProps) {
           <Text
             id={chapter.anchorId}
             style={documentStyles.chapterTitle}
-            // @ts-expect-error - bookmark prop exists at runtime
             bookmark={{
               title: chapter.title,
               fit: true,

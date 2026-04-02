@@ -160,8 +160,17 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
       }
     : documentStyles.page
 
-  // Transform TOC entries for PDF
-  const pdfTocEntries = transformTOCForPDF(tocEntries)
+  // Build anchor → chapter index map for TOC page number estimation.
+  // Page 1 = TOC, chapters start at page 2. Each chapter gets one page minimum.
+  const chapterPageMap = new Map<string, number>()
+  chapters.forEach((chapter, index) => {
+    chapterPageMap.set(chapter.anchorId, index + 2)
+  })
+
+  const pdfTocEntries = transformTOCForPDF(tocEntries).map((entry) => ({
+    ...entry,
+    pageNumber: entry.anchorId ? chapterPageMap.get(entry.anchorId) : undefined,
+  }))
 
   return (
     <Document>
@@ -201,7 +210,6 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
                 ...documentStyles.chapterTitle,
                 marginLeft: (chapter.level - 1) * 15,
               }}
-              // @ts-expect-error - bookmark prop exists at runtime
               bookmark={{
                 title: chapter.title,
                 fit: true,
@@ -221,96 +229,6 @@ export function InteriorDocument({ book, chapters, tocEntries }: InteriorDocumen
           </Page>
         )
       })}
-    </Document>
-  )
-}
-
-/**
- * Interior Document with page number resolution
- * Handles two-pass rendering by showing "..." on first pass
- */
-export function InteriorDocumentWithPageNumbers(props: InteriorDocumentProps) {
-  const { book, chapters, tocEntries } = props
-
-  // Get page dimensions from KDP trim size
-  const pageDimensions = book.trimSizeId
-    ? getPageDimensions(book.trimSizeId)
-    : { width: 612, height: 792 }
-
-  // Get layout options (use defaults if not provided)
-  const layout = book.layoutOptions ?? defaultLayoutOptions
-
-  // Calculate KDP margins if page count and bleed setting are provided
-  const pageMarginStyle = book.pageCount && book.bleedSetting
-    ? getPDFMargins(book.pageCount, book.bleedSetting)
-    : null
-
-  // Apply margin styles to page style
-  const pageStyle = pageMarginStyle
-    ? {
-        ...documentStyles.page,
-        paddingTop: pageMarginStyle.top,
-        paddingBottom: pageMarginStyle.bottom,
-        paddingLeft: pageMarginStyle.left,
-        paddingRight: pageMarginStyle.right,
-      }
-    : documentStyles.page
-
-  // Transform TOC entries for PDF
-  const pdfTocEntries = transformTOCForPDF(tocEntries)
-
-  return (
-    <Document>
-      {/* Page 1: TOC with "..." on first pass */}
-      <Page
-        size={[pageDimensions.width, pageDimensions.height]}
-        style={pageStyle}
-      >
-        <TOCPageContent
-          entries={pdfTocEntries.map((entry) => ({
-            ...entry,
-            pageNumber: undefined,
-          }))}
-        />
-      </Page>
-
-      {/* Content with chapter bookmarks */}
-      {chapters.map((chapter) => (
-        <Page
-          key={chapter.id}
-          size={[pageDimensions.width, pageDimensions.height]}
-          style={pageStyle}
-        >
-          <Text
-            id={chapter.anchorId}
-            style={{
-              ...documentStyles.chapterTitle,
-              marginLeft: (chapter.level - 1) * 15,
-            }}
-            // @ts-expect-error - bookmark prop exists at runtime
-            bookmark={{
-              title: chapter.title,
-              fit: true,
-              expanded: chapter.level === 1,
-            }}
-          >
-            {chapter.title}
-          </Text>
-
-          {/* Chapter content - rendered from HTML */}
-          <View style={documentStyles.contentWrapper}>
-            {htmlToPDF(chapter.content)}
-          </View>
-
-          <Text
-            style={documentStyles.footer}
-            render={({ pageNumber, totalPages }) =>
-              `Page ${pageNumber} of ${totalPages}`
-            }
-            fixed
-          />
-        </Page>
-      ))}
     </Document>
   )
 }

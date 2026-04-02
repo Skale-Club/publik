@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -r \"color\\\\|background\\\\|tailwind\" /c/Users/Vanildo/Dev/publik --include=*.json --include=*.config.ts --include=*.config.js)"
+      "Bash(grep -r \"color\\\\|background\\\\|tailwind\" /c/Users/Vanildo/Dev/publik --include=*.json --include=*.config.ts --include=*.config.js)",
+      "Skill(gsd:map-codebase)",
+      "Bash(rm C:/Users/Vanildo/Dev/publik/src/types/sql.js.d.ts)",
+      "Bash(rm -rf C:/Users/Vanildo/Dev/publik/public/vendor/)",
+      "Bash(curl -sL \"https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-Roman.ttf\" -o Times-Roman.ttf)",
+      "Bash(curl -sL \"https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-Italic.ttf\" -o Times-Italic.ttf)",
+      "Bash(curl -sL \"https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-Bold.ttf\" -o Times-Bold.ttf)",
+      "Bash(curl -sL \"https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Times-BoldItalic.ttf\" -o Times-BoldItalic.ttf)",
+      "Bash(curl -sL \"https://unpkg.com/@react-pdf/core@4.3.2/fonts/fonts/Helvetica.ttf\" -o Helvetica.ttf)"
     ]
   }
 }

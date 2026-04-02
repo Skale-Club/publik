@@ -6,19 +6,11 @@ import { chapters as chaptersTable } from "@/infrastructure/db/schema/chapters"
 import { tocEntries } from "@/infrastructure/db/schema/toc"
 import { InteriorDocument, type BookSettings, type ChapterContent } from "@/lib/pdf/interior-document"
 import { isValidTrimSize } from "@/lib/pdf/page-layout"
+import { estimatePageCount } from "@/lib/pdf/page-count"
 import { eq, isNull, asc, and } from "drizzle-orm"
 import type { TOCEntry } from "@/types/toc"
 
 export const maxDuration = 300
-
-function estimatePageCount(chapters: ChapterContent[]): number {
-  let totalWords = 0
-  for (const chapter of chapters) {
-    const words = chapter.content.split(/\s+/).filter(Boolean).length
-    totalWords += words
-  }
-  return Math.max(1, Math.ceil(totalWords / 500))
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,7 +59,7 @@ export async function GET(request: NextRequest) {
       updatedAt: new Date(row.updatedAt),
     }))
 
-    const pageCount = estimatePageCount(chapterContents)
+    const pageCount = estimatePageCount(chapterContents.map((c) => c.content))
     const bookSettings: BookSettings = {
       title: bookRow.title,
       author: bookRow.author,

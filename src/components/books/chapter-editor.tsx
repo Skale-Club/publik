@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import Link from "next/link"
-import { TipTapEditor } from "@/components/books/tiptap-editor"
+import { TipTapEditor } from "@/components/editor/tiptap-editor"
 import { updateChapter } from "@/app/(dashboard)/books/[bookId]/actions"
 import { Chapter } from "@/domain/book/chapter"
 import { useAutoSave } from "@/components/editor/use-auto-save"

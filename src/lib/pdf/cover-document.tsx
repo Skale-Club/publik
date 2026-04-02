@@ -118,12 +118,16 @@ export function CoverDocument({ book, frontCoverUrl, backCoverUrl, backCoverText
   const spineResult = calculateSpineWidth(book.pageCount, book.paperType)
   const canHaveSpineText = spineResult.canHaveSpineText
 
-  // Calculate width percentages for flex layout
-  // Convert points to percentages relative to total width
-  const bleedPercent = (dimensions.bleedSize / dimensions.totalWidth) * 100
-  const backCoverPercent = (dimensions.backCoverWidth / dimensions.totalWidth) * 100
-  const spinePercent = (dimensions.spineWidth / dimensions.totalWidth) * 100
-  const frontCoverPercent = (dimensions.frontCoverWidth / dimensions.totalWidth) * 100
+  // Calculate width percentages using points-based layout to avoid float precision gaps.
+  // The right bleed uses the remainder so all sections always sum to exactly 100%.
+  const toPercent = (pts: number) =>
+    parseFloat(((pts / dimensions.totalWidth) * 100).toFixed(6))
+  const bleedPercent = toPercent(dimensions.bleedSize)
+  const backCoverPercent = toPercent(dimensions.backCoverWidth)
+  const spinePercent = toPercent(dimensions.spineWidth)
+  const frontCoverPercent = toPercent(dimensions.frontCoverWidth)
+  const rightBleedPercent =
+    100 - bleedPercent - backCoverPercent - spinePercent - frontCoverPercent
 
   return (
     <Document>
@@ -162,7 +166,7 @@ export function CoverDocument({ book, frontCoverUrl, backCoverUrl, backCoverText
         )}
       </View>
 
-      <View style={{ width: `${bleedPercent}%`, height: "100%" }} />
+      <View style={{ width: `${rightBleedPercent}%`, height: "100%" }} />
     </Page>
     </Document>
   )

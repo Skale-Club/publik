@@ -13,6 +13,7 @@ interface TipTapEditorProps {
   editable?: boolean
   placeholder?: string
   editor?: Editor | null
+  onImageUpload?: (file: File) => Promise<string>
 }
 
 export interface TipTapEditorRef {
@@ -20,26 +21,30 @@ export interface TipTapEditorRef {
 }
 
 export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
-  function TipTapEditor({ content = "", onChange, editable = true, placeholder = "Start writing your chapter...", editor: externalEditor }, ref) {
+  function TipTapEditor(
+    {
+      content = "",
+      onChange,
+      editable = true,
+      placeholder = "Start writing your chapter...",
+      editor: externalEditor,
+      onImageUpload,
+    },
+    ref
+  ) {
     const internalEditorRef = useRef<Editor | null>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const [isMounted, setIsMounted] = useState(false)
+    const [uploading, setUploading] = useState(false)
 
-    // Use external editor if provided, otherwise create internal
     const internalEditor = useTiptapEditor({
       extensions: [
         StarterKit.configure({
-          heading: {
-            levels: [1, 2, 3],
-          },
+          heading: { levels: [1, 2, 3] },
         }),
-        Placeholder.configure({
-          placeholder,
-        }),
+        Placeholder.configure({ placeholder }),
         Underline,
-        Image.configure({
-          inline: false,
-          allowBase64: true,
-        }),
+        Image.configure({ inline: false, allowBase64: false }),
       ],
       content: content || "",
       editable,
@@ -48,12 +53,12 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
       },
       editorProps: {
         attributes: {
-          class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4",
+          class:
+            "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4",
         },
       },
     })
 
-    // Use either external or internal editor
     const editor = externalEditor || internalEditor
 
     useEffect(() => {
@@ -69,15 +74,30 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
     useImperativeHandle(ref, () => ({
       focus: () => {
         editor?.chain().focus().run()
-      }
+      },
     }))
 
-    // Sync content changes from parent
     useEffect(() => {
       if (editor && content !== editor.getHTML()) {
         editor.commands.setContent(content || "")
       }
     }, [content, editor])
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file || !onImageUpload) return
+
+      setUploading(true)
+      try {
+        const url = await onImageUpload(file)
+        editor?.chain().focus().setImage({ src: url }).run()
+      } catch (err) {
+        console.error("Image upload failed:", err)
+      } finally {
+        setUploading(false)
+        if (fileInputRef.current) fileInputRef.current.value = ""
+      }
+    }
 
     if (!editor) {
       return (
@@ -89,10 +109,17 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(
 
     return (
       <div className="min-h-[400px]">
-        <EditorContent
-          editor={editor}
-          className="min-h-[400px]"
-        />
+        {onImageUpload && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploading}
+          />
+        )}
+        <EditorContent editor={editor} className="min-h-[400px]" />
       </div>
     )
   }

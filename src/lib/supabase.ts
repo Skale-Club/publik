@@ -1,32 +1,16 @@
 import { createClient } from "@supabase/supabase-js"
+import { env } from "@/lib/env"
 
 let supabaseAdmin: ReturnType<typeof createClient> | null = null
-
-function getSupabaseUrl(): string {
-  return process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""
-}
-
-function getSupabaseServiceKey(): string {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""
-}
 
 export function getSupabaseAdmin() {
   if (supabaseAdmin) {
     return supabaseAdmin
   }
 
-  const supabaseUrl = getSupabaseUrl()
-  const supabaseServiceKey = getSupabaseServiceKey()
+  const supabaseUrl = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL!
 
-  if (!supabaseUrl) {
-    throw new Error("Missing Supabase URL. Set SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL.")
-  }
-
-  if (!supabaseServiceKey) {
-    throw new Error("Missing Supabase service role key. Set SUPABASE_SERVICE_ROLE_KEY.")
-  }
-
-  supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  supabaseAdmin = createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -39,7 +23,11 @@ export function getSupabaseAdmin() {
 export const COVERS_BUCKET = "covers"
 export const IMAGES_BUCKET = "images"
 
+const ensuredBuckets = new Set<string>()
+
 export async function ensureBucketExists(bucketName: string): Promise<void> {
+  if (ensuredBuckets.has(bucketName)) return
+
   const supabase = getSupabaseAdmin()
   const { data: buckets } = await supabase.storage.listBuckets()
   const exists = buckets?.some((b) => b.name === bucketName)
@@ -49,4 +37,5 @@ export async function ensureBucketExists(bucketName: string): Promise<void> {
       fileSizeLimit: 50 * 1024 * 1024,
     })
   }
+  ensuredBuckets.add(bucketName)
 }
