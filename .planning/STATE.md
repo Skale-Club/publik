@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: All 8 phases completed - v1.0 milestone done
-last_updated: "2026-03-31T03:45:00.000Z"
-last_activity: 2026-03-31
+status: executing
+stopped_at: Completed 05-cover-management-02-PLAN.md
+last_updated: "2026-04-02T21:43:09.577Z"
+last_activity: 2026-04-02
 progress:
-  total_phases: 8
-  completed_phases: 8
+  total_phases: 10
+  completed_phases: 7
   total_plans: 29
-  completed_plans: 29
+  completed_plans: 28
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Generate files ready for Amazon KDP publication from book content managed in the admin panel, without requiring the user to understand KDP formatting requirements
-**Current focus:** Milestone v1.0 Complete - All phases done
+**Current focus:** Phase 05 — cover-management
 
 ## Current Position
 
-Phase: Complete - All 8 phases executed
-Plan: 29 of 29
-Status: Milestone v1.0 complete
-Last activity: 2026-03-31 — All 8 phases completed
+Phase: 05 (cover-management) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-02
 
 Progress: [████████████] 100%
 
@@ -58,12 +58,17 @@ Progress: [████████████] 100%
 - Last 8 phases: All completed
 - Milestone: v1.0 100% complete
 
+| Phase 05-cover-management P02 | 1min | 3 tasks | 3 files |
+
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
 All phase decisions captured in respective SUMMARY.md files.
+
+- [Phase 05-cover-management]: Separated saveBackCoverImage and saveBackCoverText as distinct server actions for cleaner Zod validation per mode
+- [Phase 05-cover-management]: Back cover mode switching preserves both text and image URL in component state to restore prior input on mode switch
 
 ### Pending Todos
 
@@ -72,12 +77,13 @@ None — Milestone complete!
 ### Blockers/Concerns
 
 None resolved:
+
 - KDP margin accuracy: Verified via KDP docs during implementation
 - @react-pdf/renderer: Prototyped successfully in Phase 6
 - Spine width: Calculated correctly in Phase 7
 
 ## Session Continuity
 
-Last session: 2026-03-31T03:45:00.000Z
-Stopped at: All 8 phases completed - v1.0 milestone done
+Last session: 2026-04-02T21:43:09.567Z
+Stopped at: Completed 05-cover-management-02-PLAN.md
 Resume file: None

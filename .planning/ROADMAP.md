@@ -106,8 +106,8 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 05-01-PLAN.md — Front cover image upload with dimension validation (Wave 1)
-- [ ] 05-02-PLAN.md — Back cover (image OR text) input (Wave 1)
+- [x] 05-01-PLAN.md — Front cover image upload with dimension validation (Wave 1)
+- [x] 05-02-PLAN.md — Back cover (image OR text) input (Wave 1)
 - [ ] 05-03-PLAN.md — KDP validation integration (Wave 2)
 
 ### Phase 6: Interior PDF Generation
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Content Editor | 4/4 | Completed | 2026-03-31 |
 | 3. File Import | 3/3 | Completed | 2026-03-31 |
 | 4. Table of Contents | 3/3 | Completed | 2026-03-31 |
-| 5. Cover Management | 3/3 | Completed | 2026-03-31 |
+| 5. Cover Management | 2/3 | In Progress|  |
 | 6. Interior PDF Generation | 5/5 | Completed | 2026-03-31 |
 | 7. Cover PDF Generation | 2/2 | Completed | 2026-03-31 |
 | 8. Export, Validation & Publishing Guide | 4/4 | Completed | 2026-03-31 |
