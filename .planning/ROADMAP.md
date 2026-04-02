@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Content Editor** - Rich text editor with chapters, images, and auto-save
 - [x] **Phase 3: File Import** - Import manuscripts from DOCX, PDF, and image files (completed 2026-03-31)
 - [x] **Phase 4: Table of Contents** - Auto-generated and editable TOC from chapter headings (completed 2026-03-30)
-- [ ] **Phase 5: Cover Management** - Cover image upload and back cover content
+- [x] **Phase 5: Cover Management** - Cover image upload and back cover content (completed 2026-04-02)
 - [ ] **Phase 6: Interior PDF Generation** - KDP-compliant interior PDF with correct formatting
 - [ ] **Phase 7: Cover PDF Generation** - Full cover PDF with calculated spine width
 - [ ] **Phase 8: Export, Validation & Publishing Guide** - Validated file downloads and KDP walkthrough
@@ -108,7 +108,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — Front cover image upload with dimension validation (Wave 1)
 - [x] 05-02-PLAN.md — Back cover (image OR text) input (Wave 1)
-- [ ] 05-03-PLAN.md — KDP validation integration (Wave 2)
+- [x] 05-03-PLAN.md — KDP validation integration (Wave 2)
 
 ### Phase 6: Interior PDF Generation
 **Goal**: Users can generate a KDP-compliant interior PDF with correct margins, page numbers, headers/footers, font embedding, and exact trim dimensions
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Content Editor | 4/4 | Completed | 2026-03-31 |
 | 3. File Import | 3/3 | Completed | 2026-03-31 |
 | 4. Table of Contents | 3/3 | Completed | 2026-03-31 |
-| 5. Cover Management | 2/3 | In Progress|  |
+| 5. Cover Management | 3/3 | Complete   | 2026-04-02 |
 | 6. Interior PDF Generation | 5/5 | Completed | 2026-03-31 |
 | 7. Cover PDF Generation | 2/2 | Completed | 2026-03-31 |
 | 8. Export, Validation & Publishing Guide | 4/4 | Completed | 2026-03-31 |

@@ -42,7 +42,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Cover
 
-- [ ] **COV-01**: User can upload a front cover image
+- [x] **COV-01**: User can upload a front cover image
 - [x] **COV-02**: User can upload a back cover image or enter back cover text
 - [ ] **COV-03**: System generates a full cover PDF (front + spine + back + bleed) with correct KDP dimensions
 - [ ] **COV-04**: Spine width is calculated from page count and paper type
@@ -126,7 +126,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PDF-03 | Phase 6 | Pending |
 | PDF-04 | Phase 6 | Pending |
 | PDF-05 | Phase 6 | Complete |
-| COV-01 | Phase 5 | Pending |
+| COV-01 | Phase 5 | Complete |
 | COV-02 | Phase 5 | Complete |
 | COV-03 | Phase 7 | Pending |
 | COV-04 | Phase 7 | Pending |
